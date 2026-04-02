@@ -1,0 +1,62 @@
+======================================================================
+Activation Analysis: Qwen2.5-7B
+======================================================================
+Model type: qwen2, Layers: 28, Hidden: 3584
+Loading model from /root/paddlejob/workspace/env_run/clx/models/Qwen2.5/Qwen2.5-7B ...
+Model files size: 14.2 GB
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:04,  1.43s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:02<00:02,  1.42s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.44s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.37s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
+Loaded on single GPU (cuda:0)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen2.5.jsonl ...
+Loaded 2000 samples (lengths: min=1837, max=5358, avg=3527)
+Created 125 batches (batch_size=16, padding ratio=0.4%)
+Registered 114 hooks
+Running forward passes...
+  Batch 1/125 done
+  Batch 20/125 done
+  Batch 40/125 done
+  Batch 60/125 done
+  Batch 80/125 done
+  Batch 100/125 done
+  Batch 120/125 done
+Forward passes complete.
+
+======================================================================
+Hidden State Activation Progression — Qwen2.5-7B
+======================================================================
+Layer           RMS    AbsMean        Std        Max        Min
+------------------------------------------------------------
+0            0.2224     0.1383     0.2224       9.12     -21.38
+1            0.3126     0.1899     0.3126      16.62     -86.00
+2            0.4135     0.2551     0.4135      17.50     -89.50
+3            3.0694     0.3198     3.0694    3344.00  -10304.00
+4            3.8074     0.3696     3.8074    3968.00  -12352.00
+5            3.8683     0.4041     3.8683    3984.00  -12480.00
+6            3.9328     0.4576     3.9328    4000.00  -12608.00
+7            3.9796     0.5305     3.9796    4000.00  -12672.00
+8            4.0195     0.5857     4.0194    4000.00  -12736.00
+9            4.0956     0.5968     4.0956    4016.00  -12928.00
+10           4.1214     0.6041     4.1214    4016.00  -12992.00
+11           4.2027     0.6179     4.2026    4064.00  -13184.00
+12           4.2575     0.6334     4.2575    4080.00  -13312.00
+13           4.2929     0.6636     4.2929    4080.00  -13376.00
+14           4.3156     0.6868     4.3156    4080.00  -13376.00
+15           4.3401     0.7214     4.3400    4080.00  -13376.00
+16           4.3579     0.7538     4.3579    4080.00  -13376.00
+17           4.3783     0.7999     4.3783    4080.00  -13376.00
+18           4.4062     0.8487     4.4062    4080.00  -13376.00
+19           4.5075     1.0056     4.5075    4080.00  -13376.00
+20           4.6122     1.2061     4.6121    4064.00  -13312.00
+21           4.8453     1.4815     4.8453    4064.00  -13312.00
+22           5.2052     1.9040     5.2052    4064.00  -13312.00
+23           5.7299     2.4013     5.7299    4048.00  -13312.00
+24           6.4779     2.9605     6.4778    4032.00  -13248.00
+25           7.2754     3.6019     7.2753    4080.00  -12992.00
+26           7.6174     4.5174     7.6173    1056.00   -3168.00
+27          11.9530     5.9785    11.9527    2192.00   -4864.00
+
+Global max absolute activation: -13376.0000 (at layer_13_hidden (min))
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/activation_analysis/results/Qwen2.5/Qwen2.5-7B_activation_stats.json
+Done!
+

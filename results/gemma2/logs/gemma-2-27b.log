@@ -1,0 +1,174 @@
+======================================================================
+Activation Analysis: gemma-2-27b
+======================================================================
+Model type: gemma2, Layers: 46, Hidden: 4608
+Loading model from /root/paddlejob/workspace/env_run/clx/models/gemma2/gemma-2-27b ...
+Model files size: 101.4 GB
+Loading checkpoint shards:   0%|          | 0/24 [00:00<?, ?it/s]Loading checkpoint shards:   4%|▍         | 1/24 [00:02<00:46,  2.00s/it]Loading checkpoint shards:   8%|▊         | 2/24 [00:03<00:42,  1.93s/it]Loading checkpoint shards:  12%|█▎        | 3/24 [00:05<00:39,  1.90s/it]Loading checkpoint shards:  17%|█▋        | 4/24 [00:07<00:37,  1.89s/it]Loading checkpoint shards:  21%|██        | 5/24 [00:09<00:35,  1.86s/it]Loading checkpoint shards:  25%|██▌       | 6/24 [00:11<00:33,  1.85s/it]Loading checkpoint shards:  29%|██▉       | 7/24 [00:13<00:31,  1.84s/it]Loading checkpoint shards:  33%|███▎      | 8/24 [00:14<00:29,  1.86s/it]Loading checkpoint shards:  38%|███▊      | 9/24 [00:16<00:27,  1.85s/it]Loading checkpoint shards:  42%|████▏     | 10/24 [00:18<00:25,  1.85s/it]Loading checkpoint shards:  46%|████▌     | 11/24 [00:20<00:24,  1.85s/it]Loading checkpoint shards:  50%|█████     | 12/24 [00:22<00:22,  1.84s/it]Loading checkpoint shards:  54%|█████▍    | 13/24 [00:24<00:20,  1.83s/it]Loading checkpoint shards:  58%|█████▊    | 14/24 [00:25<00:18,  1.82s/it]Loading checkpoint shards:  62%|██████▎   | 15/24 [00:27<00:16,  1.81s/it]Loading checkpoint shards:  67%|██████▋   | 16/24 [00:29<00:14,  1.81s/it]Loading checkpoint shards:  71%|███████   | 17/24 [00:31<00:12,  1.79s/it]Loading checkpoint shards:  75%|███████▌  | 18/24 [00:33<00:10,  1.80s/it]Loading checkpoint shards:  79%|███████▉  | 19/24 [00:34<00:08,  1.79s/it]Loading checkpoint shards:  83%|████████▎ | 20/24 [00:36<00:07,  1.80s/it]Loading checkpoint shards:  88%|████████▊ | 21/24 [00:38<00:05,  1.80s/it]Loading checkpoint shards:  92%|█████████▏| 22/24 [00:40<00:03,  1.82s/it]Loading checkpoint shards:  96%|█████████▌| 23/24 [00:42<00:01,  1.82s/it]Loading checkpoint shards: 100%|██████████| 24/24 [00:43<00:00,  1.79s/it]Loading checkpoint shards: 100%|██████████| 24/24 [00:43<00:00,  1.83s/it]
+Loaded with device_map='auto' (multi-GPU)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gemma2.jsonl ...
+Loaded 2000 samples (lengths: min=1464, max=4096, avg=3507)
+Created 2000 batches (batch_size=1, padding ratio=0.0%)
+Registered 186 hooks
+Running forward passes...
+  Batch 1/2000 done
+  Batch 20/2000 done
+  Batch 40/2000 done
+  Batch 60/2000 done
+  Batch 80/2000 done
+  Batch 100/2000 done
+  Batch 120/2000 done
+  Batch 140/2000 done
+  Batch 160/2000 done
+  Batch 180/2000 done
+  Batch 200/2000 done
+  Batch 220/2000 done
+  Batch 240/2000 done
+  Batch 260/2000 done
+  Batch 280/2000 done
+  Batch 300/2000 done
+  Batch 320/2000 done
+  Batch 340/2000 done
+  Batch 360/2000 done
+  Batch 380/2000 done
+  Batch 400/2000 done
+  Batch 420/2000 done
+  Batch 440/2000 done
+  Batch 460/2000 done
+  Batch 480/2000 done
+  Batch 500/2000 done
+  Batch 520/2000 done
+  Batch 540/2000 done
+  Batch 560/2000 done
+  Batch 580/2000 done
+  Batch 600/2000 done
+  Batch 620/2000 done
+  Batch 640/2000 done
+  Batch 660/2000 done
+  Batch 680/2000 done
+  Batch 700/2000 done
+  Batch 720/2000 done
+  Batch 740/2000 done
+  Batch 760/2000 done
+  Batch 780/2000 done
+  Batch 800/2000 done
+  Batch 820/2000 done
+  Batch 840/2000 done
+  Batch 860/2000 done
+  Batch 880/2000 done
+  Batch 900/2000 done
+  Batch 920/2000 done
+  Batch 940/2000 done
+  Batch 960/2000 done
+  Batch 980/2000 done
+  Batch 1000/2000 done
+  Batch 1020/2000 done
+  Batch 1040/2000 done
+  Batch 1060/2000 done
+  Batch 1080/2000 done
+  Batch 1100/2000 done
+  Batch 1120/2000 done
+  Batch 1140/2000 done
+  Batch 1160/2000 done
+  Batch 1180/2000 done
+  Batch 1200/2000 done
+  Batch 1220/2000 done
+  Batch 1240/2000 done
+  Batch 1260/2000 done
+  Batch 1280/2000 done
+  Batch 1300/2000 done
+  Batch 1320/2000 done
+  Batch 1340/2000 done
+  Batch 1360/2000 done
+  Batch 1380/2000 done
+  Batch 1400/2000 done
+  Batch 1420/2000 done
+  Batch 1440/2000 done
+  Batch 1460/2000 done
+  Batch 1480/2000 done
+  Batch 1500/2000 done
+  Batch 1520/2000 done
+  Batch 1540/2000 done
+  Batch 1560/2000 done
+  Batch 1580/2000 done
+  Batch 1600/2000 done
+  Batch 1620/2000 done
+  Batch 1640/2000 done
+  Batch 1660/2000 done
+  Batch 1680/2000 done
+  Batch 1700/2000 done
+  Batch 1720/2000 done
+  Batch 1740/2000 done
+  Batch 1760/2000 done
+  Batch 1780/2000 done
+  Batch 1800/2000 done
+  Batch 1820/2000 done
+  Batch 1840/2000 done
+  Batch 1860/2000 done
+  Batch 1880/2000 done
+  Batch 1900/2000 done
+  Batch 1920/2000 done
+  Batch 1940/2000 done
+  Batch 1960/2000 done
+  Batch 1980/2000 done
+  Batch 2000/2000 done
+Forward passes complete.
+
+======================================================================
+Hidden State Activation Progression — gemma-2-27b
+======================================================================
+Layer           RMS    AbsMean        Std        Max        Min
+------------------------------------------------------------
+0           13.7429     1.7633    13.7417    1800.00    -908.00
+1           16.8060     2.0725    16.8049    3552.00   -1384.00
+2           17.9782     2.4225    17.9774    5440.00   -1888.00
+3           17.4669     2.7251    17.4666    5824.00   -1944.00
+4           17.6888     3.0537    17.6885    5792.00   -1936.00
+5           20.8283     3.5635    20.8274    6528.00   -1992.00
+6           24.1739     3.9645    24.1718    7616.00   -2024.00
+7           26.0855     4.4442    26.0832    8832.00   -2040.00
+8           27.2169     4.9610    27.2142    9856.00   -2064.00
+9           34.6108     6.1021    34.6059   19712.00   -2320.00
+10          35.6863     7.0189    35.6801   23680.00   -2320.00
+11          42.4552     8.5724    42.4463   26112.00   -2336.00
+12          49.3079     9.5447    49.2969   30848.00   -2336.00
+13          63.0573    10.8685    63.0439   36352.00   -2592.00
+14          69.9492    12.2380    69.9357   38912.00   -3328.00
+15          76.5649    13.6667    76.5534   50176.00   -4160.00
+16          89.4358    15.8356    89.4250   51712.00   -4640.00
+17         102.6092    17.9057   102.5985   64000.00   -4896.00
+18         116.2353    19.7553   116.2258   66560.00   -5664.00
+19         138.7959    22.6251   138.7861   66560.00   -6496.00
+20         145.6782    23.6352   145.6683   65024.00   -6176.00
+21         149.8639    26.6102   149.8558   50688.00   -6432.00
+22         156.5498    30.3804   156.5413   48128.00   -7424.00
+23         168.4908    35.8989   168.4822   54784.00   -7744.00
+24         181.5911    42.7103   181.5818   64768.00   -7616.00
+25         196.4098    49.3416   196.3993   80896.00   -7968.00
+26         226.3487    56.5573   226.3366   91136.00   -8832.00
+27         233.5136    61.2902   233.5001   97792.00   -8384.00
+28         236.6441    67.8077   236.6298  113152.00   -8448.00
+29         249.0908    77.7740   249.0747  123392.00   -8640.00
+30         267.8645    86.2013   267.8503  125952.00   -8768.00
+31         307.3885    92.5393   307.3715  128512.00   -8512.00
+32         331.8582    95.1360   331.8335  132096.00   -8576.00
+33         351.0660   100.3222   351.0386  134144.00  -11392.00
+34         367.6291   107.8168   367.6008  146432.00  -11712.00
+35         367.3666   113.9961   367.3432  151552.00  -10624.00
+36         377.5715   120.3231   377.5464  153600.00  -10752.00
+37         385.6547   132.3718   385.6331  153600.00  -11136.00
+38         408.6972   140.5681   408.6726  154624.00  -11200.00
+39         440.0106   144.9629   439.9842  149504.00  -11584.00
+40         445.0828   148.6912   445.0560  141312.00  -11200.00
+41         473.4238   162.7145   473.4015  137216.00  -11200.00
+42         488.5608   175.5894   488.5389  118272.00  -12672.00
+43         427.5325   190.8064   427.5159   98816.00  -12480.00
+44         453.2858   222.0990   453.2454   81920.00  -14336.00
+45         576.0553   291.4438   575.9662  105472.00  -19072.00
+
+Global max absolute activation: 154624.0000 (at layer_38_hidden (max))
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/activation_analysis/results/gemma2/gemma-2-27b_activation_stats.json
+Done!
+

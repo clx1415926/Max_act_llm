@@ -1,0 +1,112 @@
+You are using a model of type `bailing_moe` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+You are using a model of type `bailing_moe` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
+`torch_dtype` is deprecated! Use `dtype` instead!
+======================================================================
+Activation Analysis: Ling-mini-base-2.0-10T
+======================================================================
+Model type: bailing_moe, Layers: 20, Hidden: 2048
+Loading model from /root/paddlejob/workspace/env_run/clx/models/ling/Ling-mini-base-2.0-10T ...
+Model files size: 31.8 GB
+Loading weights:   0%|          | 0/15596 [00:00<?, ?it/s]Loading weights:   2%|▏         | 356/15596 [00:00<00:04, 3557.87it/s]Loading weights:   5%|▍         | 712/15596 [00:00<00:08, 1800.40it/s]Loading weights:   6%|▌         | 938/15596 [00:00<00:08, 1630.19it/s]Loading weights:   7%|▋         | 1124/15596 [00:00<00:09, 1571.52it/s]Loading weights:   8%|▊         | 1294/15596 [00:00<00:09, 1508.15it/s]Loading weights:   9%|▉         | 1452/15596 [00:00<00:09, 1472.99it/s]Loading weights:  10%|█         | 1603/15596 [00:01<00:10, 1378.90it/s]Loading weights:  11%|█         | 1743/15596 [00:01<00:10, 1367.69it/s]Loading weights:  12%|█▏        | 1881/15596 [00:01<00:10, 1348.89it/s]Loading weights:  13%|█▎        | 2017/15596 [00:01<00:10, 1348.80it/s]Loading weights:  14%|█▍        | 2153/15596 [00:01<00:09, 1351.59it/s]Loading weights:  15%|█▍        | 2289/15596 [00:01<00:09, 1349.67it/s]Loading weights:  16%|█▌        | 2431/15596 [00:01<00:09, 1367.69it/s]Loading weights:  17%|█▋        | 2580/15596 [00:01<00:09, 1402.55it/s]Loading weights:  17%|█▋        | 2726/15596 [00:01<00:09, 1419.43it/s]Loading weights:  18%|█▊        | 2875/15596 [00:01<00:08, 1440.18it/s]Loading weights:  19%|█▉        | 3025/15596 [00:02<00:08, 1455.52it/s]Loading weights:  20%|██        | 3171/15596 [00:02<00:08, 1418.64it/s]Loading weights:  21%|██        | 3314/15596 [00:02<00:08, 1365.19it/s]Loading weights:  22%|██▏       | 3452/15596 [00:02<00:09, 1335.67it/s]Loading weights:  23%|██▎       | 3587/15596 [00:02<00:08, 1339.34it/s]Loading weights:  24%|██▍       | 3722/15596 [00:02<00:08, 1321.05it/s]Loading weights:  25%|██▍       | 3855/15596 [00:02<00:08, 1312.79it/s]Loading weights:  26%|██▌       | 3987/15596 [00:02<00:08, 1297.16it/s]Loading weights:  26%|██▋       | 4121/15596 [00:02<00:08, 1308.86it/s]Loading weights:  27%|██▋       | 4252/15596 [00:02<00:08, 1270.38it/s]Loading weights:  28%|██▊       | 4387/15596 [00:03<00:08, 1291.31it/s]Loading weights:  29%|██▉       | 4521/15596 [00:03<00:08, 1304.16it/s]Loading weights:  30%|██▉       | 4652/15596 [00:03<00:08, 1300.44it/s]Loading weights:  31%|███       | 4783/15596 [00:03<00:08, 1294.20it/s]Loading weights:  32%|███▏      | 4924/15596 [00:03<00:08, 1327.28it/s]Loading weights:  32%|███▏      | 5057/15596 [00:03<00:07, 1323.02it/s]Loading weights:  33%|███▎      | 5190/15596 [00:03<00:07, 1310.48it/s]Loading weights:  34%|███▍      | 5323/15596 [00:03<00:07, 1315.44it/s]Loading weights:  35%|███▌      | 5464/15596 [00:03<00:07, 1337.20it/s]Loading weights:  36%|███▌      | 5599/15596 [00:04<00:07, 1339.82it/s]Loading weights:  37%|███▋      | 5734/15596 [00:04<00:07, 1325.35it/s]Loading weights:  38%|███▊      | 5867/15596 [00:04<00:07, 1311.67it/s]Loading weights:  38%|███▊      | 6001/15596 [00:04<00:07, 1318.80it/s]Loading weights:  39%|███▉      | 6135/15596 [00:04<00:07, 1323.61it/s]Loading weights:  40%|████      | 6268/15596 [00:04<00:07, 1309.91it/s]Loading weights:  41%|████      | 6400/15596 [00:04<00:07, 1311.87it/s]Loading weights:  42%|████▏     | 6532/15596 [00:04<00:07, 1289.46it/s]Loading weights:  43%|████▎     | 6662/15596 [00:04<00:07, 1257.08it/s]Loading weights:  44%|████▎     | 6793/15596 [00:04<00:06, 1266.45it/s]Loading weights:  44%|████▍     | 6923/15596 [00:05<00:06, 1275.19it/s]Loading weights:  45%|████▌     | 7051/15596 [00:05<00:06, 1272.30it/s]Loading weights:  46%|████▌     | 7186/15596 [00:05<00:06, 1294.24it/s]Loading weights:  47%|████▋     | 7322/15596 [00:05<00:06, 1311.02it/s]Loading weights:  48%|████▊     | 7454/15596 [00:05<00:06, 1300.21it/s]Loading weights:  49%|████▊     | 7585/15596 [00:05<00:06, 1286.51it/s]Loading weights:  49%|████▉     | 7714/15596 [00:05<00:06, 1280.57it/s]Loading weights:  50%|█████     | 7845/15596 [00:05<00:06, 1288.44it/s]Loading weights:  51%|█████     | 7977/15596 [00:05<00:05, 1297.02it/s]Loading weights:  52%|█████▏    | 8107/15596 [00:05<00:05, 1270.78it/s]Loading weights:  53%|█████▎    | 8239/15596 [00:06<00:05, 1284.56it/s]Loading weights:  54%|█████▎    | 8368/15596 [00:06<00:05, 1276.62it/s]Loading weights:  54%|█████▍    | 8498/15596 [00:06<00:05, 1280.92it/s]Loading weights:  55%|█████▌    | 8627/15596 [00:06<00:05, 1271.76it/s]Loading weights:  56%|█████▌    | 8755/15596 [00:06<00:05, 1271.83it/s]Loading weights:  57%|█████▋    | 8883/15596 [00:06<00:05, 1259.98it/s]Loading weights:  58%|█████▊    | 9017/15596 [00:06<00:05, 1282.05it/s]Loading weights:  59%|█████▊    | 9148/15596 [00:06<00:04, 1289.90it/s]Loading weights:  59%|█████▉    | 9278/15596 [00:06<00:04, 1279.74it/s]Loading weights:  60%|██████    | 9407/15596 [00:06<00:04, 1261.73it/s]Loading weights:  61%|██████    | 9534/15596 [00:07<00:04, 1259.12it/s]Loading weights:  62%|██████▏   | 9663/15596 [00:07<00:04, 1265.66it/s]Loading weights:  63%|██████▎   | 9794/15596 [00:07<00:04, 1276.66it/s]Loading weights:  64%|██████▎   | 9923/15596 [00:07<00:04, 1279.01it/s]Loading weights:  64%|██████▍   | 10052/15596 [00:07<00:04, 1282.03it/s]Loading weights:  65%|██████▌   | 10181/15596 [00:07<00:04, 1277.87it/s]Loading weights:  66%|██████▌   | 10315/15596 [00:07<00:04, 1294.80it/s]Loading weights:  67%|██████▋   | 10447/15596 [00:07<00:03, 1300.57it/s]Loading weights:  68%|██████▊   | 10578/15596 [00:07<00:03, 1297.47it/s]Loading weights:  69%|██████▊   | 10708/15596 [00:07<00:03, 1286.67it/s]Loading weights:  70%|██████▉   | 10840/15596 [00:08<00:03, 1294.28it/s]Loading weights:  70%|███████   | 10971/15596 [00:08<00:03, 1298.38it/s]Loading weights:  71%|███████   | 11103/15596 [00:08<00:03, 1302.08it/s]Loading weights:  72%|███████▏  | 11243/15596 [00:08<00:03, 1327.25it/s]Loading weights:  73%|███████▎  | 11376/15596 [00:08<00:03, 1305.94it/s]Loading weights:  74%|███████▍  | 11509/15596 [00:08<00:03, 1312.55it/s]Loading weights:  75%|███████▍  | 11644/15596 [00:08<00:02, 1322.37it/s]Loading weights:  76%|███████▌  | 11777/15596 [00:08<00:02, 1320.52it/s]Loading weights:  76%|███████▋  | 11910/15596 [00:08<00:02, 1296.32it/s]Loading weights:  77%|███████▋  | 12042/15596 [00:09<00:02, 1302.65it/s]Loading weights:  78%|███████▊  | 12173/15596 [00:09<00:02, 1296.05it/s]Loading weights:  79%|███████▉  | 12303/15596 [00:09<00:02, 1282.34it/s]Loading weights:  80%|███████▉  | 12438/15596 [00:09<00:02, 1300.45it/s]Loading weights:  81%|████████  | 12569/15596 [00:09<00:02, 1290.73it/s]Loading weights:  81%|████████▏ | 12699/15596 [00:09<00:02, 1277.39it/s]Loading weights:  82%|████████▏ | 12833/15596 [00:09<00:02, 1295.75it/s]Loading weights:  83%|████████▎ | 12970/15596 [00:09<00:01, 1317.57it/s]Loading weights:  84%|████████▍ | 13102/15596 [00:09<00:01, 1318.25it/s]Loading weights:  85%|████████▍ | 13234/15596 [00:09<00:01, 1312.25it/s]Loading weights:  86%|████████▌ | 13366/15596 [00:10<00:01, 1295.39it/s]Loading weights:  87%|████████▋ | 13496/15596 [00:10<00:01, 1280.18it/s]Loading weights:  87%|████████▋ | 13625/15596 [00:10<00:01, 1254.84it/s]Loading weights:  88%|████████▊ | 13751/15596 [00:10<00:01, 1253.90it/s]Loading weights:  89%|████████▉ | 13877/15596 [00:10<00:01, 1239.23it/s]Loading weights:  90%|████████▉ | 14001/15596 [00:10<00:01, 1226.12it/s]Loading weights:  91%|█████████ | 14126/15596 [00:10<00:01, 1232.66it/s]Loading weights:  91%|█████████▏| 14257/15596 [00:10<00:01, 1252.94it/s]Loading weights:  92%|█████████▏| 14385/15596 [00:10<00:00, 1260.15it/s]Loading weights:  93%|█████████▎| 14512/15596 [00:10<00:00, 1254.36it/s]Loading weights:  94%|█████████▍| 14639/15596 [00:11<00:00, 1257.19it/s]Loading weights:  95%|█████████▍| 14769/15596 [00:11<00:00, 1268.94it/s]Loading weights:  96%|█████████▌| 14896/15596 [00:11<00:00, 1251.98it/s]Loading weights:  96%|█████████▋| 15022/15596 [00:11<00:00, 1243.24it/s]Loading weights:  97%|█████████▋| 15147/15596 [00:11<00:00, 1235.04it/s]Loading weights:  98%|█████████▊| 15280/15596 [00:11<00:00, 1261.23it/s]Loading weights:  99%|█████████▉| 15409/15596 [00:11<00:00, 1267.35it/s]Loading weights: 100%|█████████▉| 15536/15596 [00:11<00:00, 1154.53it/s]Loading weights: 100%|██████████| 15596/15596 [00:12<00:00, 1293.73it/s]
+`use_return_dict` is deprecated! Use `return_dict` instead!
+/usr/local/lib/python3.10/dist-packages/transformers/modeling_attn_mask_utils.py:71: FutureWarning: The attention mask API under `transformers.modeling_attn_mask_utils` (`AttentionMaskConverter`) is deprecated and will be removed in Transformers v5.10. Please use the new API in `transformers.masking_utils`.
+  warnings.warn(DEPRECATION_MESSAGE, FutureWarning)
+/usr/local/lib/python3.10/dist-packages/transformers/modeling_attn_mask_utils.py:281: FutureWarning: The attention mask API under `transformers.modeling_attn_mask_utils` (`AttentionMaskConverter`) is deprecated and will be removed in Transformers v5.10. Please use the new API in `transformers.masking_utils`.
+  warnings.warn(DEPRECATION_MESSAGE, FutureWarning)
+/usr/local/lib/python3.10/dist-packages/transformers/modeling_attn_mask_utils.py:172: FutureWarning: The attention mask API under `transformers.modeling_attn_mask_utils` (`AttentionMaskConverter`) is deprecated and will be removed in Transformers v5.10. Please use the new API in `transformers.masking_utils`.
+  warnings.warn(DEPRECATION_MESSAGE, FutureWarning)
+/usr/local/lib/python3.10/dist-packages/transformers/modeling_attn_mask_utils.py:202: FutureWarning: The attention mask API under `transformers.modeling_attn_mask_utils` (`AttentionMaskConverter`) is deprecated and will be removed in Transformers v5.10. Please use the new API in `transformers.masking_utils`.
+  warnings.warn(DEPRECATION_MESSAGE, FutureWarning)
+/usr/local/lib/python3.10/dist-packages/transformers/modeling_attn_mask_utils.py:254: FutureWarning: The attention mask API under `transformers.modeling_attn_mask_utils` (`AttentionMaskConverter`) is deprecated and will be removed in Transformers v5.10. Please use the new API in `transformers.masking_utils`.
+  warnings.warn(DEPRECATION_MESSAGE, FutureWarning)
+Loaded on single GPU (cuda:0)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_ling.jsonl ...
+Loaded 2000 samples (lengths: min=2051, max=4785, avg=3566)
+Created 1000 batches (batch_size=2, padding ratio=0.0%)
+Registered 86 hooks
+Running forward passes...
+  Batch 1/1000 done
+  Batch 20/1000 done
+  Batch 40/1000 done
+  Batch 60/1000 done
+  Batch 80/1000 done
+  Batch 100/1000 done
+  Batch 120/1000 done
+  Batch 140/1000 done
+  Batch 160/1000 done
+  Batch 180/1000 done
+  Batch 200/1000 done
+  Batch 220/1000 done
+  Batch 240/1000 done
+  Batch 260/1000 done
+  Batch 280/1000 done
+  Batch 300/1000 done
+  Batch 320/1000 done
+  Batch 340/1000 done
+  Batch 360/1000 done
+  Batch 380/1000 done
+  Batch 400/1000 done
+  Batch 420/1000 done
+  Batch 440/1000 done
+  Batch 460/1000 done
+  Batch 480/1000 done
+  Batch 500/1000 done
+  Batch 520/1000 done
+  Batch 540/1000 done
+  Batch 560/1000 done
+  Batch 580/1000 done
+  Batch 600/1000 done
+  Batch 620/1000 done
+  Batch 640/1000 done
+  Batch 660/1000 done
+  Batch 680/1000 done
+  Batch 700/1000 done
+  Batch 720/1000 done
+  Batch 740/1000 done
+  Batch 760/1000 done
+  Batch 780/1000 done
+  Batch 800/1000 done
+  Batch 820/1000 done
+  Batch 840/1000 done
+  Batch 860/1000 done
+  Batch 880/1000 done
+  Batch 900/1000 done
+  Batch 920/1000 done
+  Batch 940/1000 done
+  Batch 960/1000 done
+  Batch 980/1000 done
+  Batch 1000/1000 done
+Forward passes complete.
+
+======================================================================
+Hidden State Activation Progression — Ling-mini-base-2.0-10T
+======================================================================
+Layer           RMS    AbsMean        Std        Max        Min
+------------------------------------------------------------
+0            0.1266     0.0543     0.1266      10.50     -14.50
+1            5.0541     0.1200     5.0541     179.00   -3392.00
+2            5.0709     0.2170     5.0709     180.00   -3392.00
+3            5.1026     0.2995     5.1026     180.00   -3392.00
+4            5.1332     0.3904     5.1331     183.00   -3392.00
+5            5.3858     0.4959     5.3858    1448.00   -8896.00
+6            5.4590     0.6732     5.4590    1448.00   -8896.00
+7            5.5261     0.8035     5.5261    1448.00   -8960.00
+8            5.6142     1.0051     5.6141    1448.00   -8960.00
+9            5.7899     1.2879     5.7899    1448.00   -8960.00
+10           6.1762     1.6391     6.1762    1448.00   -9024.00
+11           6.7468     2.3089     6.7467    1448.00   -9024.00
+12           7.6660     3.1267     7.6655    1448.00   -9024.00
+13           8.5835     3.7406     8.5826    1448.00   -9024.00
+14          10.2722     5.0128    10.2711    1448.00   -9024.00
+15          12.1175     6.1606    12.1161    1448.00   -9024.00
+16          14.7822     7.1139    14.7818    1448.00   -9024.00
+17          17.6840     8.8186    17.6834    1416.00   -9024.00
+18          21.1747    10.9454    21.1745    1248.00   -9024.00
+19          63.1348    14.1611    63.1280    1264.00   -8512.00
+
+Global max absolute activation: -9024.0000 (at layer_10_hidden (min))
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/activation_analysis/results/ling/json/Ling-mini-base-2.0-10T_activation_stats.json
+Done!
+

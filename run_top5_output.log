@@ -1,0 +1,110 @@
+============================================================
+Top-5 Activation Analysis
+============================================================
+
+── Phase 1: Small models (parallel) ──
+[LAUNCH] Qwen2.5-1.5b → GPU 0
+[LAUNCH] Qwen3-1.7B → GPU 1
+[LAUNCH] gemma-2-2b → GPU 2
+Waiting for 3 small model(s): Qwen2.5-1.5b(GPU0) Qwen3-1.7B(GPU1) gemma-2-2b(GPU2)
+[FAIL] Qwen2.5-1.5b(GPU0)
+[FAIL] Qwen3-1.7B(GPU1)
+[FAIL] gemma-2-2b(GPU2)
+WARNING: Some small models failed.
+
+── Phase 2: Medium models (parallel) ──
+[LAUNCH] Qwen2.5-7B → GPU 0
+[LAUNCH] Qwen3-8B → GPU 1
+[LAUNCH] gemma-2-9b → GPU 2
+Waiting for 3 medium model(s): Qwen2.5-7B(GPU0) Qwen3-8B(GPU1) gemma-2-9b(GPU2)
+[FAIL] Qwen2.5-7B(GPU0)
+[FAIL] Qwen3-8B(GPU1)
+[FAIL] gemma-2-9b(GPU2)
+WARNING: Some medium models failed.
+
+── Phase 3: XLarge models (parallel, one GPU each) ──
+[LAUNCH] Qwen2.5-32B → GPU 0
+[LAUNCH] Qwen3-32B → GPU 1
+[LAUNCH] Qwen3-30B-A3B → GPU 2
+[LAUNCH] gemma-2-27b → GPU 3
+Waiting for 4 xlarge model(s): Qwen2.5-32B(GPU0) Qwen3-32B(GPU1) Qwen3-30B-A3B(GPU2) gemma-2-27b(GPU3)
+[FAIL] Qwen2.5-32B(GPU0)
+[FAIL] Qwen3-32B(GPU1)
+[FAIL] Qwen3-30B-A3B(GPU2)
+[FAIL] gemma-2-27b(GPU3)
+WARNING: Some xlarge models failed.
+
+============================================================
+Generating top-5 activation plots
+============================================================
+
+==================================================
+Plotting top-5: Qwen2.5
+==================================================
+No top5 results found for Qwen2.5
+
+==================================================
+Plotting top-5: Qwen3
+==================================================
+No top5 results found for Qwen3
+
+==================================================
+Plotting top-5: gemma2
+==================================================
+No top5 results found for gemma2
+
+============================================================
+All done!
+Results directory: /root/paddlejob/workspace/env_run/clx/activation_analysis/results
+============================================================
+/root/paddlejob/workspace/env_run/clx/activation_analysis/results/gemma2/:
+total 912
+drwxr-xr-x 2 root root   4096 Mar 30 23:01 .
+drwxr-xr-x 5 root root   4096 Mar 30 15:45 ..
+-rw-r--r-- 1 root root  46028 Mar 30 19:21 gemma-2-27b_activation_stats.json
+-rw-r--r-- 1 root root   8640 Mar 30 19:21 gemma-2-27b.log
+-rw-r--r-- 1 root root   2561 Mar 30 23:02 gemma-2-27b_top5.log
+-rw-r--r-- 1 root root  26637 Mar 30 15:03 gemma-2-2b_activation_stats.json
+-rw-r--r-- 1 root root   3346 Mar 30 15:03 gemma-2-2b.log
+-rw-r--r-- 1 root root    482 Mar 30 23:02 gemma-2-2b_top5.log
+-rw-r--r-- 1 root root  42498 Mar 30 15:26 gemma-2-9b_activation_stats.json
+-rw-r--r-- 1 root root   4857 Mar 30 15:26 gemma-2-9b.log
+-rw-r--r-- 1 root root   1176 Mar 30 22:59 gemma-2-9b_top5.log
+-rw-r--r-- 1 root root 318594 Mar 30 20:10 gemma2_activation_comparison.png
+-rw-r--r-- 1 root root 177385 Mar 30 20:10 gemma2_max_activation.png
+-rw-r--r-- 1 root root 264135 Mar 30 20:10 gemma2_per_model_detail.png
+
+/root/paddlejob/workspace/env_run/clx/activation_analysis/results/Qwen2.5/:
+total 848
+drwxr-xr-x 2 root root   4096 Mar 30 23:01 .
+drwxr-xr-x 5 root root   4096 Mar 30 15:45 ..
+-rw-r--r-- 1 root root  28444 Mar 30 15:59 Qwen2.5-1.5b_activation_stats.json
+-rw-r--r-- 1 root root   3064 Mar 30 15:59 Qwen2.5-1.5b.log
+-rw-r--r-- 1 root root      0 Mar 30 23:01 Qwen2.5-1.5b_top5.log
+-rw-r--r-- 1 root root  63932 Mar 30 16:55 Qwen2.5-32B_activation_stats.json
+-rw-r--r-- 1 root root   1959 Mar 30 23:02 Qwen2.5-32B_top5.log
+-rw-r--r-- 1 root root  28518 Mar 30 15:18 Qwen2.5-7B_activation_stats.json
+-rw-r--r-- 1 root root   3629 Mar 30 15:18 Qwen2.5-7B.log
+-rw-r--r-- 1 root root    840 Mar 30 22:59 Qwen2.5-7B_top5.log
+-rw-r--r-- 1 root root 280165 Mar 30 20:10 Qwen2.5_activation_comparison.png
+-rw-r--r-- 1 root root 140414 Mar 30 20:10 Qwen2.5_max_activation.png
+-rw-r--r-- 1 root root 293659 Mar 30 20:10 Qwen2.5_per_model_detail.png
+
+/root/paddlejob/workspace/env_run/clx/activation_analysis/results/Qwen3/:
+total 1088
+drwxr-xr-x 2 root root   4096 Mar 30 23:01 .
+drwxr-xr-x 5 root root   4096 Mar 30 15:45 ..
+-rw-r--r-- 1 root root  28234 Mar 30 15:02 Qwen3-1.7B_activation_stats.json
+-rw-r--r-- 1 root root   3386 Mar 30 15:02 Qwen3-1.7B.log
+-rw-r--r-- 1 root root    669 Mar 30 23:02 Qwen3-1.7B_top5.log
+-rw-r--r-- 1 root root  60405 Mar 30 18:39 Qwen3-30B-A3B_activation_stats.json
+-rw-r--r-- 1 root root   6348 Mar 30 18:39 Qwen3-30B-A3B.log
+-rw-r--r-- 1 root root   1882 Mar 30 23:02 Qwen3-30B-A3B_top5.log
+-rw-r--r-- 1 root root  63790 Mar 30 17:56 Qwen3-32B_activation_stats.json
+-rw-r--r-- 1 root root   1953 Mar 30 23:02 Qwen3-32B_top5.log
+-rw-r--r-- 1 root root  36303 Mar 30 15:21 Qwen3-8B_activation_stats.json
+-rw-r--r-- 1 root root   4207 Mar 30 15:21 Qwen3-8B.log
+-rw-r--r-- 1 root root    915 Mar 30 22:59 Qwen3-8B_top5.log
+-rw-r--r-- 1 root root 328241 Mar 30 20:10 Qwen3_activation_comparison.png
+-rw-r--r-- 1 root root 164399 Mar 30 20:10 Qwen3_max_activation.png
+-rw-r--r-- 1 root root 375075 Mar 30 20:10 Qwen3_per_model_detail.png

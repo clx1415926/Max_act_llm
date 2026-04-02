@@ -1,0 +1,104 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+MXFP4 quantization requires Triton: CUDA requires Triton >= 3.4.0, XPU/CPU requires Triton >= 3.5.0. Please install triton: `pip install triton`. We will default to dequantizing the model to bf16.
+======================================================================
+Activation Analysis: gpt-oss-20b
+======================================================================
+Model type: gpt_oss, Layers: 24, Hidden: 2880
+Loading model from /root/paddlejob/workspace/env_run/clx/models/gpt-oss/gpt-oss-20b ...
+Model files size: 12.8 GB
+Loading weights:   0%|          | 0/411 [00:00<?, ?it/s]Loading weights:   0%|          | 1/411 [00:00<05:02,  1.36it/s]Loading weights:   1%|          | 5/411 [00:01<01:16,  5.30it/s]Loading weights:   2%|▏         | 7/411 [00:01<01:25,  4.74it/s]Loading weights:   5%|▌         | 22/411 [00:01<00:23, 16.60it/s]Loading weights:   6%|▌         | 25/411 [00:02<00:26, 14.75it/s]Loading weights:   9%|▉         | 39/411 [00:02<00:13, 26.77it/s]Loading weights:  10%|█         | 43/411 [00:02<00:17, 21.27it/s]Loading weights:  14%|█▎        | 56/411 [00:03<00:13, 26.89it/s]Loading weights:  15%|█▍        | 60/411 [00:03<00:16, 21.29it/s]Loading weights:  18%|█▊        | 73/411 [00:03<00:12, 27.86it/s]Loading weights:  19%|█▊        | 77/411 [00:04<00:14, 23.18it/s]Loading weights:  22%|██▏       | 90/411 [00:04<00:11, 27.69it/s]Loading weights:  23%|██▎       | 93/411 [00:04<00:14, 22.29it/s]Loading weights:  35%|███▍      | 143/411 [00:04<00:03, 77.43it/s]Loading weights:  47%|████▋     | 194/411 [00:04<00:01, 137.73it/s]Loading weights:  60%|█████▉    | 245/411 [00:05<00:00, 198.30it/s]Loading weights:  72%|███████▏  | 296/411 [00:05<00:00, 254.37it/s]Loading weights:  84%|████████▍ | 347/411 [00:05<00:00, 304.18it/s]Loading weights:  97%|█████████▋| 398/411 [00:05<00:00, 346.08it/s]Loading weights: 100%|██████████| 411/411 [00:05<00:00, 75.90it/s] 
+Loaded on single GPU (cuda:0)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gpt_oss.jsonl ...
+Loaded 2000 samples (lengths: min=1132, max=4307, avg=3340)
+Created 1000 batches (batch_size=2, padding ratio=0.0%)
+Registered 98 hooks
+Running forward passes...
+  Batch 1/1000 done
+  Batch 20/1000 done
+  Batch 40/1000 done
+  Batch 60/1000 done
+  Batch 80/1000 done
+  Batch 100/1000 done
+  Batch 120/1000 done
+  Batch 140/1000 done
+  Batch 160/1000 done
+  Batch 180/1000 done
+  Batch 200/1000 done
+  Batch 220/1000 done
+  Batch 240/1000 done
+  Batch 260/1000 done
+  Batch 280/1000 done
+  Batch 300/1000 done
+  Batch 320/1000 done
+  Batch 340/1000 done
+  Batch 360/1000 done
+  Batch 380/1000 done
+  Batch 400/1000 done
+  Batch 420/1000 done
+  Batch 440/1000 done
+  Batch 460/1000 done
+  Batch 480/1000 done
+  Batch 500/1000 done
+  Batch 520/1000 done
+  Batch 540/1000 done
+  Batch 560/1000 done
+  Batch 580/1000 done
+  Batch 600/1000 done
+  Batch 620/1000 done
+  Batch 640/1000 done
+  Batch 660/1000 done
+  Batch 680/1000 done
+  Batch 700/1000 done
+  Batch 720/1000 done
+  Batch 740/1000 done
+  Batch 760/1000 done
+  Batch 780/1000 done
+  Batch 800/1000 done
+  Batch 820/1000 done
+  Batch 840/1000 done
+  Batch 860/1000 done
+  Batch 880/1000 done
+  Batch 900/1000 done
+  Batch 920/1000 done
+  Batch 940/1000 done
+  Batch 960/1000 done
+  Batch 980/1000 done
+  Batch 1000/1000 done
+Forward passes complete.
+
+======================================================================
+Hidden State Activation Progression — gpt-oss-20b
+======================================================================
+Layer           RMS    AbsMean        Std        Max        Min
+------------------------------------------------------------
+0            3.2141     0.9497     3.2140     207.00    -286.00
+1            3.7035     1.1372     3.7031     236.00    -268.00
+2            4.2566     1.4638     4.2560     344.00    -336.00
+3            5.3349     1.8729     5.3341     348.00    -332.00
+4            6.1932     2.3711     6.1925     360.00    -356.00
+5            7.9741     3.0271     7.9730     420.00    -388.00
+6           16.2766     3.7866    16.2760    1344.00  -42496.00
+7           17.6895     4.7665    17.6885    1392.00  -42496.00
+8           19.2198     6.0203    19.2187    1352.00  -42752.00
+9           21.4021     7.7204    21.4001    1168.00  -42240.00
+10          23.9282     9.5825    23.9253    1368.00  -42240.00
+11          27.2444    11.5502    27.2401     968.00  -42240.00
+12          30.9033    13.7308    30.8990    2208.00  -42240.00
+13          36.3732    16.9956    36.3690    1560.00  -42240.00
+14          45.0861    22.6510    45.0828    2368.00  -42240.00
+15          56.2032    28.5871    56.2009    1696.00  -42240.00
+16          73.6215    36.4506    73.6205    2976.00  -42240.00
+17          96.3652    47.6578    96.3637    2848.00   -3008.00
+18         134.9598    62.8480   134.9592    4960.00   -4672.00
+19         181.8651    86.5708   181.8648    5760.00   -5888.00
+20         232.5031   105.0761   232.5029   11264.00   -9664.00
+21         309.7735   148.2683   309.7691   11904.00  -11392.00
+22         404.5918   168.0095   404.5875   17536.00  -17920.00
+23         587.8713   209.5781   587.8707  116736.00 -130048.00
+
+Global max absolute activation: -130048.0000 (at layer_23_hidden (min))
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/activation_analysis/results/gpt_oss/gpt-oss-20b_activation_stats.json
+Done!
+

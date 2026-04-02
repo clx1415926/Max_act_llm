@@ -1,0 +1,153 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+MXFP4 quantization requires Triton: CUDA requires Triton >= 3.4.0, XPU/CPU requires Triton >= 3.5.0. Please install triton: `pip install triton`. We will default to dequantizing the model to bf16.
+======================================================================
+Top-5 Activation Analysis: gpt-oss-20b
+======================================================================
+Model type: gpt_oss, Layers: 24, Hidden: 2880
+Loading model from /root/paddlejob/workspace/env_run/clx/models/gpt-oss/gpt-oss-20b ...
+Model files size: 12.8 GB
+Loading weights:   0%|          | 0/411 [00:00<?, ?it/s]Loading weights:   0%|          | 1/411 [00:00<04:50,  1.41it/s]Loading weights:   1%|          | 5/411 [00:01<01:14,  5.44it/s]Loading weights:   2%|▏         | 7/411 [00:01<01:21,  4.95it/s]Loading weights:   5%|▌         | 22/411 [00:01<00:22, 17.45it/s]Loading weights:   6%|▌         | 25/411 [00:02<00:25, 14.99it/s]Loading weights:   9%|▉         | 39/411 [00:02<00:13, 26.84it/s]Loading weights:  10%|█         | 43/411 [00:02<00:16, 22.14it/s]Loading weights:  14%|█▎        | 56/411 [00:03<00:12, 28.20it/s]Loading weights:  15%|█▍        | 60/411 [00:03<00:15, 23.08it/s]Loading weights:  18%|█▊        | 73/411 [00:03<00:10, 33.62it/s]Loading weights:  19%|█▉        | 78/411 [00:03<00:10, 31.76it/s]Loading weights:  22%|██▏       | 90/411 [00:03<00:09, 34.47it/s]Loading weights:  23%|██▎       | 94/411 [00:04<00:10, 29.41it/s]Loading weights:  26%|██▌       | 107/411 [00:04<00:08, 34.92it/s]Loading weights:  27%|██▋       | 111/411 [00:04<00:09, 32.45it/s]Loading weights:  38%|███▊      | 158/411 [00:04<00:02, 99.71it/s]Loading weights:  51%|█████     | 209/411 [00:04<00:01, 172.05it/s]Loading weights:  63%|██████▎   | 260/411 [00:05<00:00, 238.15it/s]Loading weights:  76%|███████▌  | 311/411 [00:05<00:00, 294.70it/s]Loading weights:  88%|████████▊ | 362/411 [00:05<00:00, 340.64it/s]Loading weights: 100%|██████████| 411/411 [00:05<00:00, 77.57it/s] 
+Loaded on single GPU (cuda:0)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gpt_oss.jsonl ...
+Loaded 2000 samples (lengths: min=1132, max=4307, avg=3340)
+Created 1000 batches (batch_size=2, padding ratio=0.0%)
+Registered 74 hooks
+Running forward passes...
+  Batch 1/1000 done
+  Batch 20/1000 done
+  Batch 40/1000 done
+  Batch 60/1000 done
+  Batch 80/1000 done
+  Batch 100/1000 done
+  Batch 120/1000 done
+  Batch 140/1000 done
+  Batch 160/1000 done
+  Batch 180/1000 done
+  Batch 200/1000 done
+  Batch 220/1000 done
+  Batch 240/1000 done
+  Batch 260/1000 done
+  Batch 280/1000 done
+  Batch 300/1000 done
+  Batch 320/1000 done
+  Batch 340/1000 done
+  Batch 360/1000 done
+  Batch 380/1000 done
+  Batch 400/1000 done
+  Batch 420/1000 done
+  Batch 440/1000 done
+  Batch 460/1000 done
+  Batch 480/1000 done
+  Batch 500/1000 done
+  Batch 520/1000 done
+  Batch 540/1000 done
+  Batch 560/1000 done
+  Batch 580/1000 done
+  Batch 600/1000 done
+  Batch 620/1000 done
+  Batch 640/1000 done
+  Batch 660/1000 done
+  Batch 680/1000 done
+  Batch 700/1000 done
+  Batch 720/1000 done
+  Batch 740/1000 done
+  Batch 760/1000 done
+  Batch 780/1000 done
+  Batch 800/1000 done
+  Batch 820/1000 done
+  Batch 840/1000 done
+  Batch 860/1000 done
+  Batch 880/1000 done
+  Batch 900/1000 done
+  Batch 920/1000 done
+  Batch 940/1000 done
+  Batch 960/1000 done
+  Batch 980/1000 done
+  Batch 1000/1000 done
+Forward passes complete.
+
+======================================================================
+Top-5 Absolute Activation Values — gpt-oss-20b
+======================================================================
+Layer    Component          Top5 AbsMean Top5 Values
+--------------------------------------------------------------------------------
+0        hidden                   240.40 [286.0, 232.0, 231.0, 228.0, 225.0]
+0        mlp_output               228.80 [262.0, 232.0, 222.0, 215.0, 213.0]
+0        attn_output               69.60 [70.5, 70.5, 69.5, 69.0, 68.5]
+1        hidden                   245.40 [268.0, 245.0, 238.0, 238.0, 238.0]
+1        mlp_output               192.40 [210.0, 191.0, 189.0, 186.0, 186.0]
+1        attn_output               79.10 [80.0, 79.5, 79.0, 79.0, 78.0]
+2        hidden                   336.00 [344.0, 336.0, 336.0, 334.0, 330.0]
+2        mlp_output               270.40 [280.0, 278.0, 274.0, 262.0, 258.0]
+2        attn_output               87.30 [88.0, 88.0, 87.5, 86.5, 86.5]
+3        hidden                   331.20 [348.0, 338.0, 332.0, 322.0, 316.0]
+3        mlp_output               244.20 [268.0, 262.0, 249.0, 223.0, 219.0]
+3        attn_output              107.30 [111.5, 107.5, 107.0, 105.5, 105.0]
+4        hidden                   353.60 [360.0, 356.0, 356.0, 352.0, 344.0]
+4        mlp_output               238.40 [242.0, 240.0, 239.0, 236.0, 235.0]
+4        attn_output              118.40 [131.0, 118.5, 116.0, 113.5, 113.0]
+5        hidden                   391.60 [420.0, 398.0, 388.0, 388.0, 364.0]
+5        mlp_output               259.80 [312.0, 264.0, 258.0, 240.0, 225.0]
+5        attn_output              139.80 [141.0, 140.0, 140.0, 139.0, 139.0]
+6        hidden                 42342.40 [42496.0, 42496.0, 42240.0, 42240.0, 42240.0]
+6        mlp_output             42291.20 [42496.0, 42240.0, 42240.0, 42240.0, 42240.0]
+6        attn_output              160.20 [168.0, 168.0, 160.0, 153.0, 152.0]
+7        hidden                 42342.40 [42496.0, 42496.0, 42240.0, 42240.0, 42240.0]
+7        mlp_output               426.80 [448.0, 444.0, 432.0, 410.0, 400.0]
+7        attn_output              230.20 [248.0, 231.0, 228.0, 228.0, 216.0]
+8        hidden                 42598.40 [42752.0, 42752.0, 42496.0, 42496.0, 42496.0]
+8        mlp_output               647.20 [696.0, 688.0, 656.0, 604.0, 592.0]
+8        attn_output              235.00 [246.0, 235.0, 232.0, 232.0, 230.0]
+9        hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+9        mlp_output               716.80 [748.0, 736.0, 704.0, 700.0, 696.0]
+9        attn_output              854.40 [884.0, 868.0, 844.0, 840.0, 836.0]
+10       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+10       mlp_output              1264.00 [1296.0, 1272.0, 1264.0, 1256.0, 1232.0]
+10       attn_output              564.00 [584.0, 572.0, 560.0, 556.0, 548.0]
+11       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+11       mlp_output               704.00 [724.0, 708.0, 700.0, 696.0, 692.0]
+11       attn_output              709.60 [832.0, 700.0, 688.0, 664.0, 664.0]
+12       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+12       mlp_output              2060.80 [2128.0, 2080.0, 2048.0, 2032.0, 2016.0]
+12       attn_output              560.00 [568.0, 568.0, 560.0, 552.0, 552.0]
+13       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+13       mlp_output               798.40 [852.0, 808.0, 784.0, 776.0, 772.0]
+13       attn_output             1235.20 [1240.0, 1240.0, 1240.0, 1232.0, 1224.0]
+14       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+14       mlp_output              1553.60 [1664.0, 1552.0, 1528.0, 1512.0, 1512.0]
+14       attn_output              610.40 [624.0, 620.0, 616.0, 596.0, 596.0]
+15       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+15       mlp_output              1008.80 [1024.0, 1020.0, 1012.0, 1000.0, 988.0]
+15       attn_output             2259.20 [2288.0, 2272.0, 2256.0, 2240.0, 2240.0]
+16       hidden                 42086.40 [42240.0, 42240.0, 41984.0, 41984.0, 41984.0]
+16       mlp_output              2704.00 [2720.0, 2720.0, 2704.0, 2688.0, 2688.0]
+16       attn_output              847.20 [872.0, 864.0, 836.0, 832.0, 832.0]
+17       hidden                  2940.80 [3008.0, 2960.0, 2912.0, 2912.0, 2912.0]
+17       mlp_output             41420.80 [41728.0, 41472.0, 41472.0, 41216.0, 41216.0]
+17       attn_output             1827.20 [1928.0, 1840.0, 1792.0, 1792.0, 1784.0]
+18       hidden                  4844.80 [4960.0, 4864.0, 4800.0, 4800.0, 4800.0]
+18       mlp_output              2992.00 [3040.0, 3024.0, 2976.0, 2976.0, 2944.0]
+18       attn_output             1772.80 [1784.0, 1776.0, 1768.0, 1768.0, 1768.0]
+19       hidden                  5804.80 [5888.0, 5824.0, 5792.0, 5760.0, 5760.0]
+19       mlp_output              3900.80 [3984.0, 3920.0, 3904.0, 3872.0, 3824.0]
+19       attn_output             2140.80 [2272.0, 2144.0, 2096.0, 2096.0, 2096.0]
+20       hidden                 11123.20 [11264.0, 11200.0, 11136.0, 11008.0, 11008.0]
+20       mlp_output              7091.20 [7200.0, 7104.0, 7072.0, 7040.0, 7040.0]
+20       attn_output             2201.60 [2240.0, 2240.0, 2224.0, 2208.0, 2096.0]
+21       hidden                 11673.60 [11904.0, 11648.0, 11648.0, 11648.0, 11520.0]
+21       mlp_output              7961.60 [8192.0, 8128.0, 7904.0, 7840.0, 7744.0]
+21       attn_output             5363.20 [5536.0, 5408.0, 5344.0, 5312.0, 5216.0]
+22       hidden                 17612.80 [17920.0, 17664.0, 17536.0, 17536.0, 17408.0]
+22       mlp_output              9126.40 [9152.0, 9152.0, 9152.0, 9088.0, 9088.0]
+22       attn_output             4556.80 [4864.0, 4672.0, 4448.0, 4416.0, 4384.0]
+23       hidden                123596.80 [130048.0, 123392.0, 122880.0, 121344.0, 120320.0]
+23       mlp_output            123392.00 [129536.0, 123392.0, 122880.0, 120832.0, 120320.0]
+23       attn_output            13286.40 [13504.0, 13440.0, 13376.0, 13120.0, 12992.0]
+
+Global top-5 absolute values: ['130048.0', '129536.0', '123392.0', '123392.0', '122880.0']
+Global top-5 absolute mean: 125849.60
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/activation_analysis/results/gpt_oss/gpt-oss-20b_top5_stats.json
+Done!
+
