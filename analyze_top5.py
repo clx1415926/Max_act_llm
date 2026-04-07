@@ -22,8 +22,18 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 import gc
 import json
 import argparse
+import sys
+import types
 import torch
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoConfig
+
+# PyTorch < 2.6 compatibility: torch.accelerator was added in 2.6.
+# MXFP4 quantizer calls current_accelerator(); returning 'mps' triggers
+# dequantize=True so the model loads as bf16.
+if not hasattr(torch, 'accelerator'):
+    _acc = types.SimpleNamespace(current_accelerator=lambda: torch.device('mps'))
+    torch.accelerator = _acc
 
 
 # ─── Data loading (same as analyze_model.py) ─────────────────────────────────
@@ -148,9 +158,24 @@ def is_moe_block(module):
     return "SparseMoe" in cls_name or "MoeBlock" in cls_name or hasattr(module, "experts")
 
 
+def _get_text_backbone(model):
+    """Navigate through VLM wrapper layers to find the text backbone (has .layers)."""
+    base = getattr(model, "model", model)
+    if hasattr(base, "layers"):
+        return base
+    lang = getattr(base, "language_model", None)
+    if lang is not None:
+        sub = getattr(lang, "model", lang)
+        if hasattr(sub, "layers"):
+            return sub
+        if hasattr(lang, "layers"):
+            return lang
+    return base
+
+
 def register_hooks(model, accumulator):
     hooks = []
-    base = model.model if hasattr(model, "model") else model
+    base = _get_text_backbone(model)
 
     # Embedding hook (embed_tokens for most models, word_embeddings for BailingMoe)
     embed_mod = getattr(base, "embed_tokens", None) or getattr(base, "word_embeddings", None)
@@ -168,8 +193,10 @@ def register_hooks(model, accumulator):
             return hook
         hooks.append(layer.register_forward_hook(make_layer_hook(i)))
 
-        # Attention output (self_attn for most models, attention for BailingMoe)
-        attn_mod = getattr(layer, "self_attn", None) or getattr(layer, "attention", None)
+        # Attention output (self_attn for most, attention for BailingMoe, linear_attn for Qwen3.5)
+        attn_mod = (getattr(layer, "self_attn", None)
+                    or getattr(layer, "attention", None)
+                    or getattr(layer, "linear_attn", None))
         if attn_mod is not None:
             def make_attn_hook(idx):
                 def hook(mod, inp, out):
@@ -227,8 +254,10 @@ def main():
 
     config = AutoConfig.from_pretrained(args.model_path, trust_remote_code=True)
     model_type = getattr(config, "model_type", "unknown")
-    num_layers = getattr(config, "num_hidden_layers", 0)
-    hidden_size = getattr(config, "hidden_size", 0)
+    # For multimodal VLM configs (qwen3_5, qwen3_5_moe), metadata lives in text_config
+    _text_cfg = getattr(config, "text_config", config)
+    num_layers = getattr(_text_cfg, "num_hidden_layers", 0)
+    hidden_size = getattr(_text_cfg, "hidden_size", 0)
     print(f"Model type: {model_type}, Layers: {num_layers}, Hidden: {hidden_size}")
 
     print(f"Loading model from {args.model_path} ...")
@@ -240,20 +269,50 @@ def main():
 
     if model_size_gb < 70:
         gpu_device = f"cuda:{args.gpu_id}"
-        model = AutoModelForCausalLM.from_pretrained(
-            args.model_path,
-            torch_dtype=torch.bfloat16,
-            device_map={"": gpu_device},
-            trust_remote_code=True,
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map={"": gpu_device},
+                trust_remote_code=True,
+            )
+        except ValueError as e:
+            if "Unrecognized configuration class" not in str(e):
+                raise
+            print(f"AutoModelForCausalLM unsupported, falling back to AutoModel")
+            try:
+                from transformers import AutoModelForVision2Seq as _Loader
+            except ImportError:
+                from transformers import AutoModel as _Loader
+            model = _Loader.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map={"": gpu_device},
+                trust_remote_code=True,
+            )
         print(f"Loaded on single GPU ({gpu_device})")
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            args.model_path,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            trust_remote_code=True,
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
+        except ValueError as e:
+            if "Unrecognized configuration class" not in str(e):
+                raise
+            print(f"AutoModelForCausalLM unsupported, falling back to AutoModel")
+            try:
+                from transformers import AutoModelForVision2Seq as _Loader
+            except ImportError:
+                from transformers import AutoModel as _Loader
+            model = _Loader.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
         print(f"Loaded with device_map='auto' (multi-GPU)")
     model.eval()
 
@@ -283,13 +342,21 @@ def main():
     base_model = model.model if hasattr(model, "model") else model
     print("Running forward passes...")
     with torch.no_grad():
-        for bi, batch in enumerate(batches):
+        pbar = tqdm(
+            enumerate(batches),
+            total=len(batches),
+            desc=f"  {model_name}",
+            unit="batch",
+            ascii=True,
+            ncols=90,
+            file=sys.stdout,
+        )
+        for bi, batch in pbar:
             input_ids = batch["input_ids"].to(input_device)
             attention_mask = batch["attention_mask"].to(input_device)
             accumulator.set_current_mask(attention_mask)
             _ = base_model(input_ids=input_ids, attention_mask=attention_mask)
-            if (bi + 1) % 20 == 0 or bi == 0:
-                print(f"  Batch {bi + 1}/{len(batches)} done")
+            pbar.set_postfix({"tokens": f"{input_ids.numel():,}"})
 
     print("Forward passes complete.")
     for h in hooks:

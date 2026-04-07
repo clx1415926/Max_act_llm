@@ -23,7 +23,7 @@ SOURCE_DATA = os.path.join(BASE_DIR, "datasets", "eval_diverse_5k_llama2.jsonl")
 # Each series maps to a representative tokenizer path
 SERIES_CONFIG = {
     "Qwen2.5": {
-        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen2.5/Qwen2.5-1.5b"),
+        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen2.5/Qwen2.5-1.5B"),
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_qwen2.5.jsonl"),
     },
     "Qwen3": {
@@ -42,6 +42,18 @@ SERIES_CONFIG = {
         "tokenizer_path": os.path.join(BASE_DIR, "models/ling/Ling-mini-base-2.0-5T"),
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_ling.jsonl"),
     },
+    "Qwen3.5": {
+        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen3.5/Qwen3.5-0.8B"),
+        "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_qwen3.5.jsonl"),
+    },
+    "gemma3": {
+        "tokenizer_path": os.path.join(BASE_DIR, "models/gemma3/gemma-3-4b-it"),
+        "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_gemma3.jsonl"),
+    },
+    "Qwen2.5-vl": {
+        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen2.5-vl/Qwen2.5-VL-3B-Instruct"),
+        "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_qwen2.5-vl.jsonl"),
+    },
 }
 
 
@@ -54,6 +66,10 @@ def convert_dataset(series_name):
             n = sum(1 for _ in f)
         print(f"[{series_name}] Dataset already exists: {cfg['output_file']} ({n} entries). Skipping.")
         return cfg["output_file"]
+
+    if not os.path.isdir(cfg["tokenizer_path"]):
+        print(f"[{series_name}] Tokenizer path not found: {cfg['tokenizer_path']}. Skipping.")
+        return None
 
     print(f"[{series_name}] Loading LLaMA-2 tokenizer from {LLAMA2_TOKENIZER_PATH}")
     src_tok = AutoTokenizer.from_pretrained(LLAMA2_TOKENIZER_PATH, trust_remote_code=True)

@@ -18,9 +18,20 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 import gc
 import json
 import argparse
+import sys
+import types
 import torch
+from tqdm import tqdm
 from collections import defaultdict
 from transformers import AutoModelForCausalLM, AutoConfig
+
+# PyTorch < 2.6 compatibility: torch.accelerator was added in 2.6.
+# MXFP4 quantizer calls current_accelerator(); if it returns a device NOT in
+# ["cuda","xpu","cpu"] the quantizer automatically sets dequantize=True and
+# loads the model as bf16 — exactly what we want.
+if not hasattr(torch, "accelerator"):
+    _acc = types.SimpleNamespace(current_accelerator=lambda: torch.device("mps"))
+    torch.accelerator = _acc
 
 
 # ─── Data loading ─────────────────────────────────────────────────────────────
@@ -181,13 +192,34 @@ def is_moe_block(module):
     return "SparseMoe" in cls_name or "MoeBlock" in cls_name or hasattr(module, "experts")
 
 
+def _get_text_backbone(model):
+    """Navigate through VLM wrapper layers to find the text backbone (has .layers).
+
+    Standard CausalLM:  model.model.layers  ← base = model.model
+    Gemma3 VLM:         model.model.language_model.model.layers
+    Qwen2.5-VL:         model.model.layers  ← base = model.model (Qwen2_5_VLModel)
+    """
+    base = getattr(model, "model", model)
+    if hasattr(base, "layers"):
+        return base
+    # VLM wrapper: model.model contains language_model (e.g. Gemma3ForCausalLM)
+    lang = getattr(base, "language_model", None)
+    if lang is not None:
+        sub = getattr(lang, "model", lang)
+        if hasattr(sub, "layers"):
+            return sub
+        if hasattr(lang, "layers"):
+            return lang
+    return base
+
+
 def register_hooks(model, accumulator):
     """Register forward hooks for all supported architectures."""
     hooks = []
     config = model.config
 
     # Get the base model (model.model for CausalLM wrappers)
-    base = model.model if hasattr(model, "model") else model
+    base = _get_text_backbone(model)
 
     # Embedding hook (embed_tokens for most models, word_embeddings for BailingMoe)
     embed_mod = getattr(base, "embed_tokens", None) or getattr(base, "word_embeddings", None)
@@ -208,17 +240,22 @@ def register_hooks(model, accumulator):
             return hook
         hooks.append(layer.register_forward_hook(make_layer_hook(i)))
 
-        # 2) Attention output (self_attn for most models, attention for BailingMoe)
-        attn_mod = getattr(layer, "self_attn", None) or getattr(layer, "attention", None)
+        # 2) Attention output (self_attn for most, attention for BailingMoe, linear_attn for Qwen3.5)
+        attn_mod = (getattr(layer, "self_attn", None)
+                    or getattr(layer, "attention", None)
+                    or getattr(layer, "linear_attn", None))
         if attn_mod is not None:
             def make_attn_hook(idx):
                 def hook(mod, inp, out):
-                    accumulator.update(f"layer_{idx}_attn_output", out[0])
+                    h = out[0] if isinstance(out, tuple) else out
+                    accumulator.update(f"layer_{idx}_attn_output", h)
                 return hook
             hooks.append(attn_mod.register_forward_hook(make_attn_hook(i)))
 
         # 3) MLP hooks — depends on architecture
-        mlp = layer.mlp
+        mlp = getattr(layer, "mlp", None)
+        if mlp is None:
+            continue
         if is_moe_block(mlp):
             # MoE block: hook on the whole block output + router
             def make_moe_hook(idx):
@@ -297,8 +334,10 @@ def main():
     # Load config to check model type
     config = AutoConfig.from_pretrained(args.model_path, trust_remote_code=True)
     model_type = getattr(config, "model_type", "unknown")
-    num_layers = getattr(config, "num_hidden_layers", 0)
-    hidden_size = getattr(config, "hidden_size", 0)
+    # For multimodal VLM configs (qwen3_5, qwen3_5_moe), metadata lives in text_config
+    _text_cfg = getattr(config, "text_config", config)
+    num_layers = getattr(_text_cfg, "num_hidden_layers", 0)
+    hidden_size = getattr(_text_cfg, "hidden_size", 0)
     print(f"Model type: {model_type}, Layers: {num_layers}, Hidden: {hidden_size}")
 
     # Load model — auto-select single GPU vs multi-GPU based on model size
@@ -311,31 +350,67 @@ def main():
 
     if model_size_gb < 70:
         gpu_device = f"cuda:{args.gpu_id}"
-        model = AutoModelForCausalLM.from_pretrained(
-            args.model_path,
-            torch_dtype=torch.bfloat16,
-            device_map={"": gpu_device},
-            trust_remote_code=True,
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map={"": gpu_device},
+                trust_remote_code=True,
+            )
+        except ValueError as e:
+            if "Unrecognized configuration class" not in str(e):
+                raise
+            print(f"AutoModelForCausalLM unsupported, falling back to AutoModel")
+            try:
+                from transformers import AutoModelForVision2Seq as _Loader
+            except ImportError:
+                from transformers import AutoModel as _Loader
+            model = _Loader.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map={"": gpu_device},
+                trust_remote_code=True,
+            )
         print(f"Loaded on single GPU ({gpu_device})")
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            args.model_path,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            trust_remote_code=True,
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
+        except ValueError as e:
+            if "Unrecognized configuration class" not in str(e):
+                raise
+            print(f"AutoModelForCausalLM unsupported, falling back to AutoModel")
+            try:
+                from transformers import AutoModelForVision2Seq as _Loader
+            except ImportError:
+                from transformers import AutoModel as _Loader
+            model = _Loader.from_pretrained(
+                args.model_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                trust_remote_code=True,
+            )
         print(f"Loaded with device_map='auto' (multi-GPU)")
     model.eval()
 
-    # Detect device for input tensors
-    first_param = next(model.parameters())
-    input_device = first_param.device
+    # Detect device for input tensors (use embedding layer's device for multi-GPU safety)
+    _embed = getattr(getattr(model, "model", model), "embed_tokens", None)
+    if _embed is not None:
+        input_device = next(_embed.parameters()).device
+    else:
+        input_device = next(model.parameters()).device
     print(f"Input device: {input_device}")
 
     # Load data
     print(f"Loading data from {args.data_path} ...")
     samples = load_data(args.data_path, args.max_samples, args.max_seq_len)
+    if not samples:
+        raise ValueError(f"No samples loaded from {args.data_path}. "
+                         "Check the file path and max_samples setting.")
     lens = [len(s) for s in samples]
     print(f"Loaded {len(samples)} samples (lengths: min={min(lens)}, max={max(lens)}, "
           f"avg={sum(lens)/len(lens):.0f})")
@@ -359,21 +434,30 @@ def main():
     # which would allocate a huge [B, T, vocab_size] logits tensor.
     base_model = model.model if hasattr(model, "model") else model
     print("Running forward passes...")
-    with torch.no_grad():
-        for bi, batch in enumerate(batches):
-            input_ids = batch["input_ids"].to(input_device)
-            attention_mask = batch["attention_mask"].to(input_device)
+    try:
+        with torch.no_grad():
+            pbar = tqdm(
+                enumerate(batches),
+                total=len(batches),
+                desc=f"  {model_name}",
+                unit="batch",
+                ascii=True,
+                ncols=90,
+                file=sys.stdout,
+            )
+            for bi, batch in pbar:
+                input_ids = batch["input_ids"].to(input_device)
+                attention_mask = batch["attention_mask"].to(input_device)
 
-            # Set mask so hooks only count non-padding positions
-            accumulator.set_current_mask(attention_mask)
+                # Set mask so hooks only count non-padding positions
+                accumulator.set_current_mask(attention_mask)
 
-            _ = base_model(input_ids=input_ids, attention_mask=attention_mask)
-            if (bi + 1) % 20 == 0 or bi == 0:
-                print(f"  Batch {bi + 1}/{len(batches)} done")
-
-    print("Forward passes complete.")
-    for h in hooks:
-        h.remove()
+                _ = base_model(input_ids=input_ids, attention_mask=attention_mask)
+                pbar.set_postfix({"tokens": f"{input_ids.numel():,}"})
+    finally:
+        print("Forward passes complete.")
+        for h in hooks:
+            h.remove()
 
     # Compute summary
     summary = accumulator.finalize()
@@ -391,11 +475,15 @@ def main():
             print(f"{i:<8} {s['rms']:>10.4f} {s['abs_mean']:>10.4f} "
                   f"{s['std']:>10.4f} {s['max']:>10.2f} {s['min']:>10.2f}")
 
-    # Global max activation (by absolute value)
+    # Global max activation (by absolute value) — limited to hidden/mlp/attn stats
+    # Excludes router logits and gate outputs which have a different value scale.
     global_max_abs = 0.0
     global_max_val = 0.0
     global_max_loc = ""
+    _activation_keys = ("_hidden", "_mlp_output", "_attn_output", "embedding_output", "final_layernorm")
     for k, v in summary.items():
+        if not any(k.endswith(s) or k == s.rstrip("_") for s in _activation_keys):
+            continue
         if abs(v["max"]) > global_max_abs:
             global_max_abs = abs(v["max"])
             global_max_val = v["max"]

@@ -21,7 +21,7 @@ MAX_SEQ_LEN=32768
 
 # Model definitions: SERIES|MODEL_NAME|MODEL_PATH|DATASET_FILE|BATCH_SIZE|SIZE_CLASS
 MODELS=(
-    "Qwen2.5|Qwen2.5-1.5b|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5b|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
+    "Qwen2.5|Qwen2.5-1.5B|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
     "Qwen2.5|Qwen2.5-7B|${MODELS_DIR}/Qwen2.5/Qwen2.5-7B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|16|medium"
     "Qwen2.5|Qwen2.5-32B|${MODELS_DIR}/Qwen2.5/Qwen2.5-32B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|4|xlarge"
     "Qwen3|Qwen3-1.7B|${MODELS_DIR}/Qwen3/Qwen3-1.7B|${DATA_DIR}/eval_diverse_5k_qwen3.jsonl|32|small"
@@ -41,20 +41,24 @@ MODELS=(
 
 get_free_gpu() {
     local threshold_mb=${1:-1000}
-    # Query all GPUs, sorted by memory used ascending
-    nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
+    local found
+    found=$(nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
         | sort -t',' -k2 -n \
         | while IFS=',' read -r idx mem_used; do
             idx=$(echo "$idx" | xargs)
             mem_used=$(echo "$mem_used" | xargs)
             if [ "$mem_used" -lt "$threshold_mb" ]; then
                 echo "$idx"
-                return 0
+                break
             fi
-        done
-    # No GPU below threshold found — return the one with least usage
-    nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
-        | sort -t',' -k2 -n | head -1 | cut -d',' -f1 | xargs
+        done)
+    if [ -n "$found" ]; then
+        echo "$found"
+    else
+        # No GPU below threshold — return the one with least usage
+        nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
+            | sort -t',' -k2 -n | head -1 | cut -d',' -f1 | xargs
+    fi
 }
 
 # Wait for a free GPU (polls every 10s until one is available)
@@ -94,19 +98,27 @@ if $DO_ANALYZE; then
     echo "Top-5 Activation Analysis"
     echo "============================================================"
 
-    # ── Phase 1: Small models ────────────────────────────────────────
     echo ""
-    echo "── Phase 1: Small models (parallel on free GPUs) ──"
+    echo "── Launching all models in parallel (one per free GPU) ──"
     PIDS=()
     NAMES=()
     for entry in "${MODELS[@]}"; do
         IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "small" ] && continue
 
         output_dir="${RESULTS_DIR}/${series}"
         json_output="${output_dir}/json/${model_name}_top5_stats.json"
         if [ -f "$json_output" ]; then
             echo "[SKIP] ${model_name} — already done"
+            continue
+        fi
+
+        if [ ! -d "$model_path" ]; then
+            echo "[SKIP] ${model_name} — model path not found: ${model_path}"
+            continue
+        fi
+
+        if [ ! -f "$data_path" ]; then
+            echo "[SKIP] ${model_name} — data path not found: ${data_path}"
             continue
         fi
 
@@ -124,11 +136,11 @@ if $DO_ANALYZE; then
             > "${output_dir}/logs/${model_name}_top5.log" 2>&1 &
         PIDS+=($!)
         NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2  # brief delay to let GPU memory register
+        sleep 45
     done
 
     if [ ${#PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#PIDS[@]} small model(s): ${NAMES[*]}"
+        echo "Waiting for ${#PIDS[@]} model(s): ${NAMES[*]}"
         FAIL=0
         for i in "${!PIDS[@]}"; do
             if wait ${PIDS[$i]}; then
@@ -138,101 +150,7 @@ if $DO_ANALYZE; then
                 FAIL=1
             fi
         done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some small models failed."
-    fi
-
-    # ── Phase 2: Medium models ───────────────────────────────────────
-    echo ""
-    echo "── Phase 2: Medium models (parallel on free GPUs) ──"
-    PIDS=()
-    NAMES=()
-    for entry in "${MODELS[@]}"; do
-        IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "medium" ] && continue
-
-        output_dir="${RESULTS_DIR}/${series}"
-        json_output="${output_dir}/json/${model_name}_top5_stats.json"
-        if [ -f "$json_output" ]; then
-            echo "[SKIP] ${model_name} — already done"
-            continue
-        fi
-
-        GPU_IDX=$(wait_for_free_gpu 1000)
-        echo "[LAUNCH] ${model_name} → GPU ${GPU_IDX}"
-        mkdir -p "${output_dir}/json" "${output_dir}/logs" "${output_dir}/plots"
-        CUDA_VISIBLE_DEVICES=${GPU_IDX} python3 "${SCRIPT_DIR}/analyze_top5.py" \
-            --model_path "${model_path}" \
-            --data_path "${data_path}" \
-            --output_dir "${output_dir}" \
-            --max_samples ${MAX_SAMPLES} \
-            --max_seq_len ${MAX_SEQ_LEN} \
-            --batch_size ${bs} \
-            --gpu_id 0 \
-            > "${output_dir}/logs/${model_name}_top5.log" 2>&1 &
-        PIDS+=($!)
-        NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2
-    done
-
-    if [ ${#PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#PIDS[@]} medium model(s): ${NAMES[*]}"
-        FAIL=0
-        for i in "${!PIDS[@]}"; do
-            if wait ${PIDS[$i]}; then
-                echo "[DONE] ${NAMES[$i]}"
-            else
-                echo "[FAIL] ${NAMES[$i]}"
-                FAIL=1
-            fi
-        done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some medium models failed."
-    fi
-
-    # ── Phase 3: XLarge models ───────────────────────────────────────
-    echo ""
-    echo "── Phase 3: XLarge models (parallel on free GPUs) ──"
-    PIDS=()
-    NAMES=()
-    for entry in "${MODELS[@]}"; do
-        IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "xlarge" ] && continue
-
-        output_dir="${RESULTS_DIR}/${series}"
-        json_output="${output_dir}/json/${model_name}_top5_stats.json"
-        if [ -f "$json_output" ]; then
-            echo "[SKIP] ${model_name} — already done"
-            continue
-        fi
-
-        GPU_IDX=$(wait_for_free_gpu 1000)
-        echo "[LAUNCH] ${model_name} → GPU ${GPU_IDX}"
-        mkdir -p "${output_dir}/json" "${output_dir}/logs" "${output_dir}/plots"
-        CUDA_VISIBLE_DEVICES=${GPU_IDX} python3 "${SCRIPT_DIR}/analyze_top5.py" \
-            --model_path "${model_path}" \
-            --data_path "${data_path}" \
-            --output_dir "${output_dir}" \
-            --max_samples ${MAX_SAMPLES} \
-            --max_seq_len ${MAX_SEQ_LEN} \
-            --batch_size ${bs} \
-            --gpu_id 0 \
-            > "${output_dir}/logs/${model_name}_top5.log" 2>&1 &
-        PIDS+=($!)
-        NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2
-    done
-
-    if [ ${#PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#PIDS[@]} xlarge model(s): ${NAMES[*]}"
-        FAIL=0
-        for i in "${!PIDS[@]}"; do
-            if wait ${PIDS[$i]}; then
-                echo "[DONE] ${NAMES[$i]}"
-            else
-                echo "[FAIL] ${NAMES[$i]}"
-                FAIL=1
-            fi
-        done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some xlarge models failed."
+        [ $FAIL -ne 0 ] && echo "WARNING: Some models failed."
     fi
     echo ""
 fi

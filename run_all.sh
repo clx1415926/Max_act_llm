@@ -26,7 +26,7 @@ MAX_SEQ_LEN=32768
 # ─── Model definitions ──────────────────────────────────────────────────────
 MODELS=(
     # Qwen2.5 series
-    "Qwen2.5|Qwen2.5-1.5b|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5b|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
+    "Qwen2.5|Qwen2.5-1.5B|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
     "Qwen2.5|Qwen2.5-7B|${MODELS_DIR}/Qwen2.5/Qwen2.5-7B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|16|medium"
     "Qwen2.5|Qwen2.5-32B|${MODELS_DIR}/Qwen2.5/Qwen2.5-32B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|4|xlarge"
     # Qwen3 series
@@ -48,19 +48,24 @@ MODELS=(
 
 get_free_gpu() {
     local threshold_mb=${1:-1000}
-    nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
+    local found
+    found=$(nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
         | sort -t',' -k2 -n \
         | while IFS=',' read -r idx mem_used; do
             idx=$(echo "$idx" | xargs)
             mem_used=$(echo "$mem_used" | xargs)
             if [ "$mem_used" -lt "$threshold_mb" ]; then
                 echo "$idx"
-                return 0
+                break
             fi
-        done
-    # Fallback: least-used GPU
-    nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
-        | sort -t',' -k2 -n | head -1 | cut -d',' -f1 | xargs
+        done)
+    if [ -n "$found" ]; then
+        echo "$found"
+    else
+        # Fallback: GPU with least memory usage
+        nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits \
+            | sort -t',' -k2 -n | head -1 | cut -d',' -f1 | xargs
+    fi
 }
 
 # Wait for a free GPU (polls every 10s)
@@ -112,19 +117,41 @@ if $DO_ANALYZE; then
     echo "Step 2: Running activation analysis for all models"
     echo "============================================================"
 
-    # ── Phase 1: Small models ──────────────────────────────────────────
+    # Track analyzed models
+    ANALYZED_MODELS=()
+    SKIPPED_MODELS=()
+    FAILED_MODELS=()
+
+    # ── Launch all models in parallel, one per free GPU ───────────────
+    # Models are launched immediately as free GPUs are found, regardless of
+    # size class. Each model occupies one GPU (single-GPU for <70 GB models,
+    # auto for larger). A 45-second sleep between launches gives the previous
+    # model enough time to claim its GPU memory before we check for the next
+    # free card.
     echo ""
-    echo "── Phase 1: Small models (parallel on free GPUs) ──"
-    SMALL_PIDS=()
-    SMALL_NAMES=()
+    echo "── Launching all models in parallel (one per free GPU) ──"
+    ALL_PIDS=()
+    ALL_NAMES=()
     for entry in "${MODELS[@]}"; do
         IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "small" ] && continue
 
         output_dir="${RESULTS_DIR}/${series}"
         json_output="${output_dir}/json/${model_name}_activation_stats.json"
         if [ -f "$json_output" ]; then
             echo "[SKIP] ${model_name} — already done"
+            SKIPPED_MODELS+=("${model_name} (already processed)")
+            continue
+        fi
+
+        if [ ! -d "$model_path" ]; then
+            echo "[SKIP] ${model_name} — model path not found: ${model_path}"
+            SKIPPED_MODELS+=("${model_name} (model not found)")
+            continue
+        fi
+
+        if [ ! -f "$data_path" ]; then
+            echo "[SKIP] ${model_name} — data path not found: ${data_path}"
+            SKIPPED_MODELS+=("${model_name} (data not found)")
             continue
         fi
 
@@ -140,117 +167,31 @@ if $DO_ANALYZE; then
             --batch_size ${bs} \
             --gpu_id 0 \
             > "${output_dir}/logs/${model_name}.log" 2>&1 &
-        SMALL_PIDS+=($!)
-        SMALL_NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2
+        ALL_PIDS+=($!)
+        ALL_NAMES+=("${model_name}(GPU${GPU_IDX})")
+        ANALYZED_MODELS+=("${model_name}")
+        # Wait for this GPU's memory to be claimed before picking the next card.
+        # 45 s covers even large models (32B+ takes ~30 s to start allocating).
+        sleep 45
     done
 
-    if [ ${#SMALL_PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#SMALL_PIDS[@]} small model(s): ${SMALL_NAMES[*]}"
+    # ── Wait for all launched jobs ─────────────────────────────────────
+    if [ ${#ALL_PIDS[@]} -gt 0 ]; then
+        echo ""
+        echo "Waiting for ${#ALL_PIDS[@]} model(s): ${ALL_NAMES[*]}"
         FAIL=0
-        for i in "${!SMALL_PIDS[@]}"; do
-            if wait ${SMALL_PIDS[$i]}; then
-                echo "[DONE] ${SMALL_NAMES[$i]}"
+        for i in "${!ALL_PIDS[@]}"; do
+            model_name_only="${ALL_NAMES[$i]%(*}"
+            if wait ${ALL_PIDS[$i]}; then
+                echo "[DONE] ${ALL_NAMES[$i]}"
             else
-                echo "[FAIL] ${SMALL_NAMES[$i]} — check log for details"
+                echo "[FAIL] ${ALL_NAMES[$i]} — check log for details"
+                FAILED_MODELS+=("${model_name_only}")
+                ANALYZED_MODELS=("${ANALYZED_MODELS[@]/$model_name_only}")
                 FAIL=1
             fi
         done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some small models failed. Continuing..."
-    fi
-
-    # ── Phase 2: Medium models ─────────────────────────────────────────
-    echo ""
-    echo "── Phase 2: Medium models (parallel on free GPUs) ──"
-    MED_PIDS=()
-    MED_NAMES=()
-    for entry in "${MODELS[@]}"; do
-        IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "medium" ] && continue
-
-        output_dir="${RESULTS_DIR}/${series}"
-        json_output="${output_dir}/json/${model_name}_activation_stats.json"
-        if [ -f "$json_output" ]; then
-            echo "[SKIP] ${model_name} — already done"
-            continue
-        fi
-
-        GPU_IDX=$(wait_for_free_gpu 1000)
-        echo "[LAUNCH] ${model_name} → GPU ${GPU_IDX}"
-        mkdir -p "${output_dir}/json" "${output_dir}/logs" "${output_dir}/plots"
-        CUDA_VISIBLE_DEVICES=${GPU_IDX} python3 "${SCRIPT_DIR}/analyze_model.py" \
-            --model_path "${model_path}" \
-            --data_path "${data_path}" \
-            --output_dir "${output_dir}" \
-            --max_samples ${MAX_SAMPLES} \
-            --max_seq_len ${MAX_SEQ_LEN} \
-            --batch_size ${bs} \
-            --gpu_id 0 \
-            > "${output_dir}/logs/${model_name}.log" 2>&1 &
-        MED_PIDS+=($!)
-        MED_NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2
-    done
-
-    if [ ${#MED_PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#MED_PIDS[@]} medium model(s): ${MED_NAMES[*]}"
-        FAIL=0
-        for i in "${!MED_PIDS[@]}"; do
-            if wait ${MED_PIDS[$i]}; then
-                echo "[DONE] ${MED_NAMES[$i]}"
-            else
-                echo "[FAIL] ${MED_NAMES[$i]} — check log for details"
-                FAIL=1
-            fi
-        done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some medium models failed. Continuing..."
-    fi
-
-    # ── Phase 3: XLarge models ─────────────────────────────────────────
-    echo ""
-    echo "── Phase 3: XLarge models (parallel on free GPUs) ──"
-    XL_PIDS=()
-    XL_NAMES=()
-    for entry in "${MODELS[@]}"; do
-        IFS='|' read -r series model_name model_path data_path bs size_class <<< "$entry"
-        [ "$size_class" != "xlarge" ] && continue
-
-        output_dir="${RESULTS_DIR}/${series}"
-        json_output="${output_dir}/json/${model_name}_activation_stats.json"
-        if [ -f "$json_output" ]; then
-            echo "[SKIP] ${model_name} — already done"
-            continue
-        fi
-
-        GPU_IDX=$(wait_for_free_gpu 1000)
-        echo "[LAUNCH] ${model_name} → GPU ${GPU_IDX}"
-        mkdir -p "${output_dir}/json" "${output_dir}/logs" "${output_dir}/plots"
-        CUDA_VISIBLE_DEVICES=${GPU_IDX} python3 "${SCRIPT_DIR}/analyze_model.py" \
-            --model_path "${model_path}" \
-            --data_path "${data_path}" \
-            --output_dir "${output_dir}" \
-            --max_samples ${MAX_SAMPLES} \
-            --max_seq_len ${MAX_SEQ_LEN} \
-            --batch_size ${bs} \
-            --gpu_id 0 \
-            > "${output_dir}/logs/${model_name}.log" 2>&1 &
-        XL_PIDS+=($!)
-        XL_NAMES+=("${model_name}(GPU${GPU_IDX})")
-        sleep 2
-    done
-
-    if [ ${#XL_PIDS[@]} -gt 0 ]; then
-        echo "Waiting for ${#XL_PIDS[@]} xlarge model(s): ${XL_NAMES[*]}"
-        FAIL=0
-        for i in "${!XL_PIDS[@]}"; do
-            if wait ${XL_PIDS[$i]}; then
-                echo "[DONE] ${XL_NAMES[$i]}"
-            else
-                echo "[FAIL] ${XL_NAMES[$i]} — check log for details"
-                FAIL=1
-            fi
-        done
-        [ $FAIL -ne 0 ] && echo "WARNING: Some xlarge models failed."
+        [ $FAIL -ne 0 ] && echo "WARNING: Some models failed. Check logs." || true
     fi
     echo ""
 fi
@@ -266,6 +207,113 @@ fi
 
 echo "============================================================"
 echo "All done!"
-echo "Results directory: ${RESULTS_DIR}"
 echo "============================================================"
-ls -la "${RESULTS_DIR}"/*/ 2>/dev/null || true
+echo ""
+
+# ─── Summary Report ─────────────────────────────────────────────────────────
+echo "════════════════════════════════════════════════════════════"
+echo "                     EXECUTION SUMMARY"
+echo "════════════════════════════════════════════════════════════"
+echo ""
+
+# Models analysis summary
+if $DO_ANALYZE; then
+    echo "📊 Models Analysis:"
+    echo "──────────────────────────────────────────────────────────"
+    
+    # Successfully analyzed models
+    if [ ${#ANALYZED_MODELS[@]} -gt 0 ]; then
+        # Filter out empty entries
+        ANALYZED_FILTERED=()
+        for model in "${ANALYZED_MODELS[@]}"; do
+            [ -n "$model" ] && ANALYZED_FILTERED+=("$model")
+        done
+        
+        if [ ${#ANALYZED_FILTERED[@]} -gt 0 ]; then
+            echo "✓ Successfully analyzed (${#ANALYZED_FILTERED[@]} models):"
+            for model in "${ANALYZED_FILTERED[@]}"; do
+                echo "  • $model"
+            done
+            echo ""
+        fi
+    fi
+    
+    # Skipped models
+    if [ ${#SKIPPED_MODELS[@]} -gt 0 ]; then
+        echo "⊘ Skipped (${#SKIPPED_MODELS[@]} models):"
+        for model in "${SKIPPED_MODELS[@]}"; do
+            echo "  • $model"
+        done
+        echo ""
+    fi
+    
+    # Failed models
+    if [ ${#FAILED_MODELS[@]} -gt 0 ]; then
+        # Filter out empty entries
+        FAILED_FILTERED=()
+        for model in "${FAILED_MODELS[@]}"; do
+            [ -n "$model" ] && FAILED_FILTERED+=("$model")
+        done
+        
+        if [ ${#FAILED_FILTERED[@]} -gt 0 ]; then
+            echo "✗ Failed (${#FAILED_FILTERED[@]} models):"
+            for model in "${FAILED_FILTERED[@]}"; do
+                echo "  • $model"
+            done
+            echo ""
+        fi
+    fi
+fi
+
+# Generated files summary
+echo "📁 Generated Files:"
+echo "──────────────────────────────────────────────────────────"
+echo "Results directory: ${RESULTS_DIR}"
+echo ""
+
+# List JSON files
+JSON_COUNT=$(find "${RESULTS_DIR}" -name "*_activation_stats.json" 2>/dev/null | wc -l)
+if [ $JSON_COUNT -gt 0 ]; then
+    echo "JSON Statistics Files ($JSON_COUNT):"
+    find "${RESULTS_DIR}" -name "*_activation_stats.json" 2>/dev/null | while read -r file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  • $(basename "$file") [$size]"
+    done
+    echo ""
+fi
+
+# List log files
+LOG_COUNT=$(find "${RESULTS_DIR}" -name "*.log" 2>/dev/null | wc -l)
+if [ $LOG_COUNT -gt 0 ]; then
+    echo "Log Files ($LOG_COUNT):"
+    find "${RESULTS_DIR}" -name "*.log" 2>/dev/null | while read -r file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  • $(basename "$file") [$size]"
+    done
+    echo ""
+fi
+
+# List plot files
+PLOT_COUNT=$(find "${RESULTS_DIR}" -path "*/plots/*" -type f 2>/dev/null | wc -l)
+if [ $PLOT_COUNT -gt 0 ]; then
+    echo "Plot Files ($PLOT_COUNT):"
+    find "${RESULTS_DIR}" -path "*/plots/*" -type f 2>/dev/null | head -20 | while read -r file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  • $(basename "$file") [$size]"
+    done
+    if [ $PLOT_COUNT -gt 20 ]; then
+        echo "  ... and $((PLOT_COUNT - 20)) more plot files"
+    fi
+    echo ""
+fi
+
+# Directory structure
+echo "📂 Results Directory Structure:"
+echo "──────────────────────────────────────────────────────────"
+ls -lh "${RESULTS_DIR}"/*/ 2>/dev/null | grep -E "^(d|total)" || echo "  (No subdirectories found)"
+echo ""
+
+echo "════════════════════════════════════════════════════════════"
+echo "Summary report complete!"
+echo "════════════════════════════════════════════════════════════"
+

@@ -25,9 +25,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 BASE_DIR = "/root/paddlejob/workspace/env_run/clx/activation_analysis"
-RESULTS_DIR = os.path.join(BASE_DIR, "results")
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
-SERIES_LIST = ["Qwen2.5", "Qwen3", "gemma2", "gpt_oss", "ling"]
+SERIES_LIST = ["Qwen2.5", "Qwen3", "Qwen3.5", "gemma2", "gemma3", "gpt_oss", "ling", "Qwen2.5-vl"]
 
 # Color palette for models within a series
 COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
@@ -193,8 +193,10 @@ def plot_series_comparison(series_name, results, output_dir):
                 ls, vs = zip(*valid)
                 ax.plot(ls, vs, label=label, color=color, linewidth=1.5, alpha=0.8)
 
+        gmax = res.get('global_max_activation', None)
+        gmax_str = f"{gmax:.1f}" if isinstance(gmax, (int, float)) else "N/A"
         ax.set_title(f"{name} (layers={n_layers}, hidden={res['hidden_size']}, "
-                     f"global_max={res.get('global_max_activation', 'N/A'):.1f})",
+                     f"global_max={gmax_str})",
                      fontsize=11)
         ax.set_xlabel("Layer")
         ax.set_ylabel("Value")

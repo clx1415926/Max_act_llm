@@ -1,0 +1,59 @@
+Sliding Window Attention is enabled but not implemented for `sdpa`; unexpected results may be encountered.
+======================================================================
+Activation Analysis: Qwen2.5-1.5B
+======================================================================
+Model type: qwen2, Layers: 28, Hidden: 1536
+Loading model from /root/paddlejob/workspace/env_run/clx/models/Qwen2.5/Qwen2.5-1.5B ...
+Model files size: 2.9 GB
+Loaded on single GPU (cuda:0)
+Input device: cuda:0
+Loading data from /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen2.5.jsonl ...
+Loaded 2000 samples (lengths: min=136, max=4715, avg=3392)
+Created 63 batches (batch_size=32, padding ratio=1.0%)
+Registered 114 hooks
+Running forward passes...
+  Batch 1/63 done
+  Batch 20/63 done
+  Batch 40/63 done
+  Batch 60/63 done
+Forward passes complete.
+
+======================================================================
+Hidden State Activation Progression — Qwen2.5-1.5B
+======================================================================
+Layer           RMS    AbsMean        Std        Max        Min
+------------------------------------------------------------
+0            0.4739     0.3139     0.4738      14.75     -12.12
+1            2.2988     0.4023     2.2988    3376.00   -4192.00
+2            4.7896     0.5159     4.7895    6144.00   -7680.00
+3            4.9014     0.5976     4.9014    6240.00   -7808.00
+4            4.9724     0.6572     4.9723    6304.00   -7872.00
+5            5.0421     0.6346     5.0420    6368.00   -7968.00
+6            5.0578     0.6577     5.0577    6368.00   -7968.00
+7            5.0686     0.6883     5.0686    6368.00   -7968.00
+8            5.0701     0.6851     5.0701    6368.00   -7968.00
+9            5.0768     0.7106     5.0768    6368.00   -7968.00
+10           5.0811     0.7078     5.0811    6368.00   -7968.00
+11           5.0949     0.7345     5.0949    6368.00   -7968.00
+12           5.1141     0.7555     5.1141    6368.00   -7968.00
+13           5.1292     0.7865     5.1292    6368.00   -7968.00
+14           5.1291     0.7888     5.1291    6368.00   -7968.00
+15           5.1360     0.7996     5.1360    6368.00   -7968.00
+16           5.1539     0.8367     5.1539    6368.00   -7968.00
+17           5.1848     0.9092     5.1848    6368.00   -7968.00
+18           5.2239     0.9779     5.2238    6368.00   -7968.00
+19           5.2862     1.1146     5.2862    6368.00   -7968.00
+20           5.3677     1.2592     5.3677    6368.00   -7968.00
+21           5.5786     1.5192     5.5785    6368.00   -7968.00
+22           5.8824     1.8524     5.8823    6368.00   -7968.00
+23           6.3223     2.2387     6.3222    6368.00   -7968.00
+24           6.8570     2.6466     6.8570    6336.00   -7936.00
+25           7.4705     3.0063     7.4704    6336.00   -7936.00
+26           6.8014     3.3895     6.8013     286.00    -258.00
+27           8.0229     4.0460     8.0226    1520.00   -1104.00
+
+Global max absolute activation: -7968.0000 (at layer_5_hidden (min))
+
+Results saved to: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/json/Qwen2.5-1.5B_activation_stats.json
+Done!
+
