@@ -24,8 +24,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-BASE_DIR = "/root/paddlejob/workspace/env_run/clx/activation_analysis"
-RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
 SERIES_LIST = ["Qwen2.5", "Qwen3", "Qwen3.5", "gemma2", "gemma3", "gpt_oss", "ling", "Qwen2.5-vl"]
 
@@ -37,7 +37,7 @@ LINESTYLES = ["-", "--", "-.", ":", "-", "--"]
 def _parse_model_size(name):
     """Extract numeric model size for sorting.
     E.g. 'Qwen2.5-1.5b' -> 1.5, 'Qwen3-32B' -> 32, 'gemma-2-27b' -> 27,
-         'Qwen3-30B-A3B' -> 30, 'Ling-mini-base-2.0-5T' -> 5 (token trillions).
+         'Qwen3-30B-A3B' -> 30, 'Ling-mini-5T' -> 5 (token trillions).
     """
     import re
     # Match patterns like 1.5b, 7B, 32B, 30B-A3B (parameter billions)

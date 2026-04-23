@@ -4,192 +4,33 @@ Step 1: Converting datasets to target encodings
 ============================================================
 [Qwen2.5] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen2.5.jsonl (5000 entries). Skipping.
 [Qwen3] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen3.jsonl (5000 entries). Skipping.
-[gemma2] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gemma2.jsonl (1443 entries). Skipping.
+[gemma2] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gemma2.jsonl (5000 entries). Skipping.
 [gpt_oss] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gpt_oss.jsonl (5000 entries). Skipping.
 [ling] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_ling.jsonl (5000 entries). Skipping.
+[Qwen3.5] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen3.5.jsonl (5000 entries). Skipping.
+[gemma3] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_gemma3.jsonl (5000 entries). Skipping.
+[Qwen2.5-vl] Dataset already exists: /root/paddlejob/workspace/env_run/clx/datasets/eval_diverse_5k_qwen2.5-vl.jsonl (5000 entries). Skipping.
 
 ============================================================
 Running full activation analysis (analyze_model.py)
 ============================================================
 
 ── Launching all parallel models (analyze_model.py) ──
-[SKIP] Qwen2.5-1.5B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-7B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-32B — already done (_activation_stats.json)
-[SKIP] Qwen3-1.7B — already done (_activation_stats.json)
-[SKIP] Qwen3-8B — already done (_activation_stats.json)
-[SKIP] Qwen3-32B — already done (_activation_stats.json)
-[SKIP] Qwen3-30B-A3B — already done (_activation_stats.json)
-[SKIP] gemma-2-2b — already done (_activation_stats.json)
-[SKIP] gemma-2-9b — already done (_activation_stats.json)
-[SKIP] gemma-2-27b — already done (_activation_stats.json)
-[SKIP] gpt-oss-20b — already done (_activation_stats.json)
-
-── Phase: xxlarge models / sequential (analyze_model.py) ──
-[SKIP] Ling-mini-base-2.0-5T — already done (_activation_stats.json)
-[SKIP] Ling-mini-base-2.0-10T — already done (_activation_stats.json)
-[SKIP] Ling-mini-base-2.0-15T — already done (_activation_stats.json)
-[SKIP] Ling-mini-base-2.0-20T — already done (_activation_stats.json)
-
+[LAUNCH] Qwen2.5-1.5B → GPU 0
+[LAUNCH] Qwen2.5-3B → GPU 1
+[LAUNCH] Qwen2.5-7B → GPU 2
+[LAUNCH] Qwen2.5-32B → GPU 3
 ============================================================
-Running top-5 activation analysis (analyze_top5.py)
+Running activation analysis (analyze_model.py)
 ============================================================
 
-── Launching all parallel models (analyze_top5.py) ──
-[SKIP] Qwen2.5-1.5B — already done (_top5_stats.json)
-[SKIP] Qwen2.5-7B — already done (_top5_stats.json)
-[SKIP] Qwen2.5-32B — already done (_top5_stats.json)
-[SKIP] Qwen3-1.7B — already done (_top5_stats.json)
-[SKIP] Qwen3-8B — already done (_top5_stats.json)
-[SKIP] Qwen3-32B — already done (_top5_stats.json)
-[SKIP] Qwen3-30B-A3B — already done (_top5_stats.json)
-[SKIP] gemma-2-2b — already done (_top5_stats.json)
-[SKIP] gemma-2-9b — already done (_top5_stats.json)
-[SKIP] gemma-2-27b — already done (_top5_stats.json)
-[SKIP] gpt-oss-20b — already done (_top5_stats.json)
-
-── Phase: xxlarge models / sequential (analyze_top5.py) ──
-[RUN] Ling-mini-base-2.0-5T → GPU 0
-[DONE] Ling-mini-base-2.0-5T
-[RUN] Ling-mini-base-2.0-10T → GPU 0
-[DONE] Ling-mini-base-2.0-10T
-[RUN] Ling-mini-base-2.0-15T → GPU 0
-[DONE] Ling-mini-base-2.0-15T
-[RUN] Ling-mini-base-2.0-20T → GPU 0
-[DONE] Ling-mini-base-2.0-20T
-
-============================================================
-Generating activation distribution plots
-============================================================
-
-==================================================
-Plotting: Qwen2.5
-==================================================
-Found 3 model results: ['Qwen2.5-1.5B', 'Qwen2.5-7B', 'Qwen2.5-32B']
-[Qwen2.5] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/plots/Qwen2.5_activation_comparison.png
-[Qwen2.5] Saved max activation plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/plots/Qwen2.5_max_activation.png
-[Qwen2.5] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/plots/Qwen2.5_per_model_detail.png
-
-==================================================
-Plotting: Qwen3
-==================================================
-Found 4 model results: ['Qwen3-1.7B', 'Qwen3-8B', 'Qwen3-30B-A3B', 'Qwen3-32B']
-[Qwen3] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen3/plots/Qwen3_activation_comparison.png
-[Qwen3] Saved max activation plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen3/plots/Qwen3_max_activation.png
-[Qwen3] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen3/plots/Qwen3_per_model_detail.png
-
-==================================================
-Plotting: gemma2
-==================================================
-Found 3 model results: ['gemma-2-2b', 'gemma-2-9b', 'gemma-2-27b']
-[gemma2] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gemma2/plots/gemma2_activation_comparison.png
-[gemma2] Saved max activation plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gemma2/plots/gemma2_max_activation.png
-[gemma2] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gemma2/plots/gemma2_per_model_detail.png
-
-==================================================
-Plotting: gpt_oss
-==================================================
-Found 1 model results: ['gpt-oss-20b']
-[gpt_oss] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gpt_oss/plots/gpt_oss_activation_comparison.png
-[gpt_oss] Saved max activation plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gpt_oss/plots/gpt_oss_max_activation.png
-[gpt_oss] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gpt_oss/plots/gpt_oss_per_model_detail.png
-
-==================================================
-Plotting: ling
-==================================================
-Found 4 model results: ['Ling-mini-base-2.0-5T', 'Ling-mini-base-2.0-10T', 'Ling-mini-base-2.0-15T', 'Ling-mini-base-2.0-20T']
-[ling] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/ling/plots/ling_activation_comparison.png
-[ling] Saved max activation plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/ling/plots/ling_max_activation.png
-[ling] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/ling/plots/ling_per_model_detail.png
-
-============================================================
-Generating top-5 activation plots
-============================================================
-
-==================================================
-Plotting top-5: Qwen2.5
-==================================================
-Found 3 model results: ['Qwen2.5-1.5B', 'Qwen2.5-7B', 'Qwen2.5-32B']
-[Qwen2.5] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/plots/Qwen2.5_top5_comparison.png
-[Qwen2.5] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen2.5/plots/Qwen2.5_top5_per_model_detail.png
-
-==================================================
-Plotting top-5: Qwen3
-==================================================
-Found 4 model results: ['Qwen3-1.7B', 'Qwen3-8B', 'Qwen3-30B-A3B', 'Qwen3-32B']
-[Qwen3] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen3/plots/Qwen3_top5_comparison.png
-[Qwen3] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/Qwen3/plots/Qwen3_top5_per_model_detail.png
-
-==================================================
-Plotting top-5: gemma2
-==================================================
-Found 3 model results: ['gemma-2-2b', 'gemma-2-9b', 'gemma-2-27b']
-[gemma2] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gemma2/plots/gemma2_top5_comparison.png
-[gemma2] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gemma2/plots/gemma2_top5_per_model_detail.png
-
-==================================================
-Plotting top-5: gpt_oss
-==================================================
-Found 1 model results: ['gpt-oss-20b']
-[gpt_oss] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gpt_oss/plots/gpt_oss_top5_comparison.png
-[gpt_oss] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/gpt_oss/plots/gpt_oss_top5_per_model_detail.png
-
-==================================================
-Plotting top-5: ling
-==================================================
-Found 4 model results: ['Ling-mini-base-2.0-5T', 'Ling-mini-base-2.0-10T', 'Ling-mini-base-2.0-15T', 'Ling-mini-base-2.0-20T']
-[ling] Saved comparison plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/ling/plots/ling_top5_comparison.png
-[ling] Saved per-model detail plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/ling/plots/ling_top5_per_model_detail.png
-[cross-series] Saved summary plot: /root/paddlejob/workspace/env_run/clx/atv_alz/results/plots/cross_series_top5_summary.png
-
-============================================================
-All done!
-============================================================
-
-Analyzed this run:
-  Ling-mini-base-2.0-5T [full] [top5]
-  Ling-mini-base-2.0-10T [full] [top5]
-  Ling-mini-base-2.0-15T [full] [top5]
-  Ling-mini-base-2.0-20T [full] [top5]
-
-Previously analyzed:
-  Qwen2.5-1.5B [full] [top5]
-  Qwen2.5-7B [full] [top5]
-  Qwen2.5-32B [full] [top5]
-  Qwen3-1.7B [full] [top5]
-  Qwen3-8B [full] [top5]
-  Qwen3-32B [full] [top5]
-  Qwen3-30B-A3B [full] [top5]
-  gemma-2-2b [full] [top5]
-  gemma-2-9b [full] [top5]
-  gemma-2-27b [full] [top5]
-  gpt-oss-20b [full] [top5]
-
-Generated plots:
-  [04-06 17:49] gemma2/plots/gemma2_activation_comparison.png
-  [04-06 17:49] gemma2/plots/gemma2_max_activation.png
-  [04-06 17:49] gemma2/plots/gemma2_per_model_detail.png
-  [04-06 17:49] gemma2/plots/gemma2_top5_comparison.png
-  [04-06 17:49] gemma2/plots/gemma2_top5_per_model_detail.png
-  [04-06 17:49] gpt_oss/plots/gpt_oss_activation_comparison.png
-  [04-06 17:49] gpt_oss/plots/gpt_oss_max_activation.png
-  [04-06 17:49] gpt_oss/plots/gpt_oss_per_model_detail.png
-  [04-06 17:49] gpt_oss/plots/gpt_oss_top5_comparison.png
-  [04-06 17:49] gpt_oss/plots/gpt_oss_top5_per_model_detail.png
-  [04-06 17:49] ling/plots/ling_activation_comparison.png
-  [04-06 17:49] ling/plots/ling_max_activation.png
-  [04-06 17:49] ling/plots/ling_per_model_detail.png
-  [04-06 17:49] ling/plots/ling_top5_comparison.png
-  [04-06 17:49] ling/plots/ling_top5_per_model_detail.png
-  [04-06 17:49] plots/cross_series_top5_summary.png
-  [04-06 17:49] Qwen2.5/plots/Qwen2.5_activation_comparison.png
-  [04-06 17:49] Qwen2.5/plots/Qwen2.5_max_activation.png
-  [04-06 17:49] Qwen2.5/plots/Qwen2.5_per_model_detail.png
-  [04-06 17:49] Qwen2.5/plots/Qwen2.5_top5_comparison.png
-  [04-06 17:49] Qwen2.5/plots/Qwen2.5_top5_per_model_detail.png
-  [04-06 17:49] Qwen3/plots/Qwen3_activation_comparison.png
-  [04-06 17:49] Qwen3/plots/Qwen3_max_activation.png
-  [04-06 17:49] Qwen3/plots/Qwen3_per_model_detail.png
-  [04-06 17:49] Qwen3/plots/Qwen3_top5_comparison.png
-  [04-06 17:49] Qwen3/plots/Qwen3_top5_per_model_detail.png
-bash: auto_run: command not found
+── Scheduling models (analyze_model.py) ──
+Queue size: 21 model(s)
+[LAUNCH] Qwen2.5-1.5B → GPU 0
+[LAUNCH] Qwen2.5-3B → GPU 1
+[LAUNCH] Qwen2.5-7B → GPU 2
+[LAUNCH] Qwen2.5-32B → GPU 3
+[LAUNCH] Qwen3-1.7B → GPU 4
+[LAUNCH] Qwen3-8B → GPU 5
+[LAUNCH] Qwen3-32B → GPU 6
+[LAUNCH] Qwen3-30B-A3B → GPU 7

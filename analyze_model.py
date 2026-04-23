@@ -78,11 +78,32 @@ class StatsAccumulator:
 
     Accumulates on GPU to avoid CPU-GPU sync per hook call.
     Only transfers to CPU at finalize().
+
+    Additionally tracks per-layer Sun-style element-median statistics for
+    tensors matching _SUN_SUFFIXES (hidden / attn_output / mlp_output /
+    embedding / final_layernorm). See _update_sun for details.
     """
+
+    # Tensors whose name ends with one of these (or equals, for global names)
+    # are eligible for Sun median-ratio analysis. Excludes mlp_gate
+    # (intermediate_size dim) and router/moe_gate (num_experts dim).
+    _SUN_SUFFIXES = ("_hidden", "_attn_output", "_mlp_output")
+    _SUN_EXACT    = ("embedding_output", "final_layernorm")
+
+    # Sun thresholds (Sun et al. 2024, arXiv:2402.17762). Fixed — downstream
+    # scripts can re-judge at any threshold from the raw peak_sun_ratio.
+    _SUN_T_VAL   = 100.0
+    _SUN_T_RATIO = 1000.0
+
+    # Top-K absolute activations to track per eligible component.
+    _TOP5_K = 5
 
     def __init__(self):
         # Each stat entry holds GPU tensors (scalar, 0-dim)
         self._stats = {}
+        self._sun = {}              # name -> dict of sun-state tensors
+        self._top5 = {}             # name -> Tensor[K] absolute values (GPU)
+        self._top5_signed = {}      # name -> Tensor[K] signed values (GPU)
         self._current_mask = None
 
     def _get_stat(self, name, device):
@@ -101,6 +122,87 @@ class StatsAccumulator:
         """Set mask for the current batch. Shape: [B, T], 1=valid, 0=pad."""
         self._current_mask = attention_mask.bool()
 
+    # ── Sun median-ratio accumulator ──────────────────────────────────────
+    @classmethod
+    def _eligible_for_sun(cls, name):
+        if name in cls._SUN_EXACT:
+            return True
+        return any(name.endswith(s) for s in cls._SUN_SUFFIXES)
+
+    def _get_sun_state(self, name, device):
+        if name not in self._sun:
+            z32 = lambda v: torch.tensor(v, dtype=torch.float32, device=device)
+            z64 = lambda v: torch.tensor(v, dtype=torch.float64, device=device)
+            self._sun[name] = {
+                "peak_abs":         z32(0.0),
+                "peak_median":      z32(0.0),
+                "max_ratio":        z32(0.0),
+                "max_ratio_abs":    z32(0.0),
+                "max_ratio_median": z32(0.0),
+                "n_tokens":         0,
+                "n_pass_sun":       0,
+                "sum_ratio":        z64(0.0),
+                "sum_ratio_sq":     z64(0.0),
+            }
+        return self._sun[name]
+
+    def _update_sun(self, name, t, mask):
+        """Per-token element-median accumulator for Sun's strict definition.
+
+        t:    [B, T, d] activation tensor
+        mask: [B, T] bool on same device as t
+        Processes one sample at a time for memory safety.
+        """
+        if t.dim() != 3 or t.shape[-1] < 2:
+            return
+        if mask is None or mask.shape != t.shape[:2]:
+            return
+
+        dev = t.device
+        s = self._get_sun_state(name, dev)
+        T_val = self._SUN_T_VAL
+        T_ratio = self._SUN_T_RATIO
+        B = t.shape[0]
+
+        for bi in range(B):
+            mi = mask[bi]                                       # [T]
+            if not mi.any():
+                continue
+            ti = t[bi].detach().float().abs()                   # [T, d]
+            per_tok_max    = ti.amax(dim=-1)                    # [T]
+            per_tok_median = ti.median(dim=-1).values           # [T]
+            eps = torch.finfo(per_tok_median.dtype).tiny
+            ratio = per_tok_max / per_tok_median.clamp_min(eps) # [T]
+
+            # Restrict to valid positions
+            v_abs = per_tok_max[mi]
+            v_med = per_tok_median[mi]
+            v_rat = ratio[mi]
+
+            # Layer peak |x| (and corresponding token's median)
+            i_abs = int(v_abs.argmax().item())
+            cand_abs = v_abs[i_abs]
+            if cand_abs > s["peak_abs"]:
+                s["peak_abs"]    = cand_abs.detach()
+                s["peak_median"] = v_med[i_abs].detach()
+
+            # Layer max Sun-ratio
+            i_rat = int(v_rat.argmax().item())
+            cand_r = v_rat[i_rat]
+            if cand_r > s["max_ratio"]:
+                s["max_ratio"]        = cand_r.detach()
+                s["max_ratio_abs"]    = v_abs[i_rat].detach()
+                s["max_ratio_median"] = v_med[i_rat].detach()
+
+            # Aggregates
+            n_valid = int(v_abs.numel())
+            n_pass = int(((v_abs > T_val) & (v_rat > T_ratio)).sum().item())
+            s["n_tokens"]     += n_valid
+            s["n_pass_sun"]   += n_pass
+            s["sum_ratio"]    += v_rat.to(torch.float64).sum()
+            s["sum_ratio_sq"] += (v_rat.to(torch.float64) ** 2).sum()
+            del ti, per_tok_max, per_tok_median, ratio, v_abs, v_med, v_rat
+
     def update(self, name, tensor):
         """Update stats on GPU, applying mask to exclude padding positions.
 
@@ -113,6 +215,12 @@ class StatsAccumulator:
 
         if mask is not None and t.dim() >= 2 and t.shape[:2] == mask.shape[:2]:
             m = mask.to(device)  # [B, T] bool
+
+            # Sun-style per-token element-median (only 3-D [B,T,d] tensors
+            # and only the whitelisted component names).
+            if t.dim() == 3 and self._eligible_for_sun(name):
+                self._update_sun(name, t, m)
+
             B = t.shape[0]
             # Process one sample at a time to keep peak memory low
             for bi in range(B):
@@ -144,6 +252,30 @@ class StatsAccumulator:
                     s["max"] = torch.maximum(s["max"], filled_max.max())
                     s["min"] = torch.minimum(s["min"], filled_min.min())
                     s["count"] += count
+
+                    # Top-K absolute activations (same eligibility as Sun).
+                    # Pure GPU ops — no boolean indexing, no CPU sync.
+                    if ti.dim() == 2 and self._eligible_for_sun(name):
+                        K = self._TOP5_K
+                        absti = ti_f.abs()
+                        neg_one = absti.new_tensor(-1.0)
+                        absti_masked = torch.where(mi_exp, absti, neg_one)
+                        flat_abs = absti_masked.reshape(-1)
+                        flat_signed = ti_f.reshape(-1)
+                        k = min(K, flat_abs.numel())
+                        vals, idx = flat_abs.topk(k)
+                        signed = flat_signed.gather(0, idx)
+                        if name not in self._top5:
+                            self._top5[name] = torch.full((K,), 0.0, device=device)
+                            self._top5_signed[name] = torch.full((K,), 0.0, device=device)
+                        merged_abs = torch.cat([self._top5[name], vals])
+                        merged_signed = torch.cat([self._top5_signed[name], signed])
+                        fk = min(K, merged_abs.numel())
+                        _, keep_idx = merged_abs.topk(fk)
+                        self._top5[name] = merged_abs.index_select(0, keep_idx)
+                        self._top5_signed[name] = merged_signed.index_select(0, keep_idx)
+                        del absti, absti_masked, flat_abs, flat_signed, vals, idx, signed, merged_abs, merged_signed, keep_idx
+
                     del ti_f, mi_f, masked, filled_max, filled_min
         else:
             # No mask needed — accumulate directly (small tensors like embedding)
@@ -181,6 +313,41 @@ class StatsAccumulator:
                 "min": s["min"].item(),
                 "count": int(n),
             }
+        # Merge in per-layer Sun statistics
+        for name, sd in self._sun.items():
+            nt = int(sd["n_tokens"])
+            entry = result.setdefault(name, {})
+            peak_med = sd["peak_median"].item()
+            peak_abs = sd["peak_abs"].item()
+            peak_ratio = (peak_abs / peak_med) if peak_med > 0 else 0.0
+            if nt > 0:
+                mean_r = sd["sum_ratio"].item() / nt
+                mean_r_sq = sd["sum_ratio_sq"].item() / nt
+                std_r = max(0.0, mean_r_sq - mean_r ** 2) ** 0.5
+            else:
+                mean_r = 0.0
+                std_r = 0.0
+            entry["sun_peak_abs"]          = peak_abs
+            entry["sun_peak_token_median"] = peak_med
+            entry["sun_peak_token_ratio"]  = peak_ratio
+            entry["sun_max_ratio"]         = sd["max_ratio"].item()
+            entry["sun_max_ratio_abs"]     = sd["max_ratio_abs"].item()
+            entry["sun_max_ratio_median"]  = sd["max_ratio_median"].item()
+            entry["sun_mean_ratio"]        = mean_r
+            entry["sun_std_ratio"]         = std_r
+            entry["sun_n_tokens"]          = nt
+            entry["sun_n_pass"]            = int(sd["n_pass_sun"])
+            entry["sun_t_val"]             = self._SUN_T_VAL
+            entry["sun_t_ratio"]           = self._SUN_T_RATIO
+        # Merge in per-layer top-K absolute/signed values
+        for name, abs_t in self._top5.items():
+            entry = result.setdefault(name, {})
+            abs_vals = abs_t.cpu().tolist()
+            signed_vals = self._top5_signed[name].cpu().tolist()
+            entry["top5_abs"]         = abs_vals
+            entry["top5_signed"]      = signed_vals
+            entry["top5_abs_mean"]    = sum(abs_vals) / len(abs_vals) if abs_vals else 0.0
+            entry["top5_signed_mean"] = sum(signed_vals) / len(signed_vals) if signed_vals else 0.0
         return result
 
 
@@ -510,12 +677,59 @@ def main():
         "per_layer_stats": {},
     }
 
+    # Top-5 fields are list-valued; split them out into a separate JSON so
+    # the main activation_stats.json remains purely scalar (backward compat).
+    _TOP5_FIELDS = ("top5_abs", "top5_signed", "top5_abs_mean", "top5_signed_mean")
+    top5_per_layer = {}
     for k, v in summary.items():
-        output_data["per_layer_stats"][k] = {kk: float(vv) for kk, vv in v.items()}
+        scalar_entry = {}
+        top5_entry = {}
+        for kk, vv in v.items():
+            if kk in _TOP5_FIELDS:
+                top5_entry[kk] = vv
+            else:
+                scalar_entry[kk] = float(vv)
+        output_data["per_layer_stats"][k] = scalar_entry
+        if top5_entry:
+            top5_per_layer[k] = top5_entry
 
     with open(output_json, "w") as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
     print(f"\nResults saved to: {output_json}")
+
+    # ── Save top-5 JSON (same schema as legacy analyze_top5.py) ──────────
+    all_abs, all_signed = [], []
+    for _k, entry in top5_per_layer.items():
+        for a, s in zip(entry.get("top5_abs", []), entry.get("top5_signed", [])):
+            all_abs.append(a)
+            all_signed.append(s)
+    K = StatsAccumulator._TOP5_K
+    paired = sorted(zip(all_abs, all_signed), reverse=True)[:K]
+    global_top5_abs = [p[0] for p in paired]
+    global_top5_signed = [p[1] for p in paired]
+    global_top5_abs_mean = (sum(global_top5_abs) / len(global_top5_abs)) if global_top5_abs else 0.0
+
+    print(f"\nGlobal top-5 absolute values: {[f'{v:.1f}' for v in global_top5_abs]}")
+    print(f"Global top-5 absolute mean: {global_top5_abs_mean:.2f}")
+
+    top5_json = os.path.join(json_dir, f"{model_name}_top5_stats.json")
+    top5_data = {
+        "model_name": model_name,
+        "model_path": args.model_path,
+        "model_type": model_type,
+        "num_hidden_layers": num_layers,
+        "hidden_size": hidden_size,
+        "data_path": args.data_path,
+        "num_samples": len(samples),
+        "max_seq_len": args.max_seq_len,
+        "global_top5_abs": global_top5_abs,
+        "global_top5_signed": global_top5_signed,
+        "global_top5_abs_mean": global_top5_abs_mean,
+        "per_layer_stats": top5_per_layer,
+    }
+    with open(top5_json, "w") as f:
+        json.dump(top5_data, f, indent=2, ensure_ascii=False)
+    print(f"Top-5 results saved to: {top5_json}")
 
     # Cleanup
     del model

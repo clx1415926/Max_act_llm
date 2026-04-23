@@ -16,7 +16,7 @@ import json
 import argparse
 from transformers import AutoTokenizer
 
-BASE_DIR = "/root/paddlejob/workspace/env_run/clx"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LLAMA2_TOKENIZER_PATH = os.path.join(BASE_DIR, "Llama-2-7b-hf")
 SOURCE_DATA = os.path.join(BASE_DIR, "datasets", "eval_diverse_5k_llama2.jsonl")
 
@@ -39,7 +39,7 @@ SERIES_CONFIG = {
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_gpt_oss.jsonl"),
     },
     "ling": {
-        "tokenizer_path": os.path.join(BASE_DIR, "models/ling/Ling-mini-base-2.0-5T"),
+        "tokenizer_path": os.path.join(BASE_DIR, "models/ling/Ling-mini-5T"),
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_ling.jsonl"),
     },
     "Qwen3.5": {
@@ -51,7 +51,7 @@ SERIES_CONFIG = {
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_gemma3.jsonl"),
     },
     "Qwen2.5-vl": {
-        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen2.5-vl/Qwen2.5-VL-3B-Instruct"),
+        "tokenizer_path": os.path.join(BASE_DIR, "models/Qwen2.5-vl/models/Qwen2.5-VL-3B"),
         "output_file": os.path.join(BASE_DIR, "datasets/eval_diverse_5k_qwen2.5-vl.jsonl"),
     },
 }

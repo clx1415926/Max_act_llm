@@ -1,0 +1,14 @@
+# Models
+models/
+Llama-2-7b-hf/
+
+# Datasets
+datasets/
+
+# Old / dated results
+results_old/
+results0422/
+
+# Python cache
+__pycache__/
+*.pyc

@@ -24,7 +24,7 @@ import random
 import argparse
 from transformers import AutoTokenizer
 
-BASE_DIR = "/root/paddlejob/workspace/env_run/clx"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOURCE_FILE = os.path.join(BASE_DIR, "slim_1b.jsonl")
 OUTPUT_FILE = os.path.join(BASE_DIR, "datasets", "eval_diverse_5k_llama2.jsonl")
 TOKENIZER_PATH = os.path.join(BASE_DIR, "Llama-2-7b-hf")

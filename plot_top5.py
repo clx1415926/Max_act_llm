@@ -22,8 +22,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-BASE_DIR = "/root/paddlejob/workspace/env_run/clx/activation_analysis"
-RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
 SERIES_LIST = ["Qwen2.5", "Qwen3", "Qwen3.5", "gemma2", "gemma3", "gpt_oss", "ling", "Qwen2.5-vl"]
 

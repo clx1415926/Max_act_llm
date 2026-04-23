@@ -1,0 +1,245 @@
+跨架构 LLM 最大激活值分析 —— 简要大纲 (v2, 基于 results/ 最新数据)
+=========================================
+
+基础信息
+  - 参考: Sun et al., Massive Activations in LLMs, COLM 2024
+  - 覆盖: 8 个系列, 24 个 checkpoint, 0.8B–35B
+  - 数据: eval_diverse_5k_*.jsonl, 5000 样本, max_seq_len=32768
+  - 结果目录: atv_alz/results/
+  - v2 更新: 新数据包含 Sun 判据字段 (sun_n_pass / sun_peak_token_ratio),
+             可直接用 Sun 原始定义判定, 无需再依赖 Definition C 的替代判据.
+
+想回答的问题
+  RQ1 新一代模型里 massive activation 还普遍吗
+  RQ2 同系列里，最大激活值与尺寸的关系
+  RQ3 不同系列，相近的尺寸差多少
+  RQ4 MoE 和 Dense 不一样吗
+  RQ5 VL 和纯文本有差吗
+  RQ6 训练程度的影响
+  RQ7 base 经过 instruct 训练变化
+
+
+1. Introduction
+   背景: 量化/剪枝/KV-cache 都要看激活值分布
+   Sun 的工作只覆盖 LLaMA2、Falcon、Mixtral 这批老模型
+   贡献: 把 Qwen2.5/3/3.5、Gemma2/3、Ling (5T-20T)、GPT-OSS、Qwen2.5-VL 跑一遍
+
+
+2. Related Work（待核查）
+   - Outlier features vs massive activations: 前者按维度，后者按 token×dim
+   - SmoothQuant、GPTQ、AWQ 简单带过
+   - Dense/MoE、Pre/Post Norm、RMS/LN 作背景
+
+
+3. Methodology
+   3.1 模型: 同系列 (Qwen2.5/3/3.5、Gemma2)、跨系列同规模、特殊架构 (MoE/VL/GPT-OSS)
+   3.2 流程: 前向推理，hook 每层
+   3.3 指标: mean/std/abs_mean/rms/max/min + top5 + 全局 max 位置
+        + Sun 原始判据字段: sun_peak_abs / sun_peak_token_median /
+                            sun_max_ratio_median / sun_n_pass
+        组件: embedding / attn_out / mlp_gate / mlp_out / hidden / final_ln
+        MoE 额外: moe_gate, router_logits
+        涌现层 (作为 |max| 跳变指标): 相对上一层 |max| 跳变 ≥ 10×
+
+
+4. Massive Activation 存在性 (v2 重写, 直接用 Sun 定义)
+   4.1 Sun 原始判据
+       定义: |x| > 100 且 |x| / element_median > 1000
+       新数据已保存 sun_n_pass (该层中通过 Sun 判据的 token 数).
+       判定口径: 模型任一 hidden 层存在 sun_n_pass ≥ 1 即算该模型"存在
+       massive activation".
+
+   4.2 主结果
+       20/24 模型通过 Sun 判据.
+       4 个反例 (全部集中在小模型或 Qwen3.5 家族):
+           Qwen2.5-1.5B         (|x*|=7968, hidden 层级 sun_n_pass=0;
+                                 几何 ratio 大但 element-median 不够小)
+           Qwen3.5-0.8B         (|x*|=122, 在 final_ln; hidden 仅 ~10)
+           Qwen3.5-9B           (|x*|=956)
+           Qwen3.5-35B-A3B      (|x*|=132, MoE)
+
+   4.3 Definition C 作为辅助 (保留)
+       C: |x*| > 100 且 |x*| / abs_mean(峰值层) > 100
+       数学关系: 分布右偏 ⇒ abs_mean ≥ median ⇒ C 阈值比 Sun 松,
+                "C 不过 ⇒ Sun 不过" 的单向保证仍成立.
+       判定 (T_C=100): 23/24 通过 (唯一不过: Qwen3.5-0.8B, |x*|=122, C 比 40.4×).
+       T_C=100 与 200 结论一致 (鲁棒).
+       Sun 判据严于 C: 除 Qwen3.5-0.8B 外, 另有 3 个模型 C 通过但 Sun 不通过
+       (Qwen2.5-1.5B / Qwen3.5-9B / Qwen3.5-35B-A3B).
+
+   4.4 载体与邻域
+       - 24 个模型中 22 个全局 max 在 hidden;
+         gpt-oss-20b 在 mlp_out (唯一例外),
+         Qwen3.5-0.8B 在 final_ln (该模型本身 Sun 不通过)
+       - v1 报告 "Qwen3-8B 全局 max 在 mlp_out" 在新数据中不成立:
+         Qwen3-8B 全局 max = 17,664, 位于 layer_16 hidden (已人工核对 JSON).
+       - 多数模型 mlp_out 峰值与 hidden 峰值在 95-99% 同量级 (组件共振)
+
+
+5. 层间分布
+
+   5.1 峰值相对深度 (peak_layer / (N-1))
+       Qwen2.5:     1.5B→7B→32B    = 18%, 44%, 98%               (32B 偏后)
+       Qwen2.5-VL:  3B→7B→32B      = 91%, 93%, 69%
+       Qwen3:       1.7B→8B→32B    = 93%, 46%, 69%
+       Qwen3:  30B-A3B             = 6% (MoE 极浅层)
+       Qwen3.5: 0.8B→9B→27B        = 100%, 100%, 100% (尾层)
+       Qwen3.5: 35B-A3B            = 98%
+       Gemma2:  2b→9b→27b          = 94%, 100%, 84%
+       Gemma3:  4b→27b             = 88%, 75%
+       Ling  (5T/10T/15T/20T)      = 70%, 50%, 95%, 95% (训练晚期后移)
+       GPT-OSS 20B                 = 96%
+
+   5.2 涌现 (系统重新计算, hidden.max 相邻层 |·| 比)
+       判定: 相邻层比 ≥ 10× 记为 "sudden", 否则 "gradual"
+       统计: 14/24 sudden, 10/24 gradual
+       Ling 全部 sudden, 且训练越久跳变越猛:
+            5T: 27× → 10T: 14× → 15T: 74× → 20T: 92× (layer 1)
+       Qwen2.5/Qwen3 基本 sudden (早层 189×, 228×, 169× 等)
+       Qwen3.5 全系列 gradual (最大跳变 ≤ 6×) — 涌现模式彻底改变
+       Gemma2/3 gradual, 但峰值绝对值反而最大
+       GPT-OSS 只在末层出现 7.5× 跳变, 介于两者之间
+
+   5.3 涌现-保持-消退模式
+       Qwen2.5 / Qwen3 / Ling: 符合 Sun 观察 (早中期涌现, 中后期保持, 末层消退)
+       Gemma2/3:  末层继续上涨 (例 Gemma2-27b: 206 → 237 → 307),
+                  Gemma3-27b 峰值直接在 46/62 (75% 深度), 之后仍保持
+       Qwen3.5 / Gemma2-9b:  无明显涌现, 峰值贴在最后一层, 说明"非涌现型"
+                             在新家族中大量出现, 与 Sun 的 "中间层保持" 图像冲突
+       Top5 多层传播: 23/24 模型 top5 落在 ≥ 2 层,
+                      唯一单层是 Qwen3.5-0.8B (Sun 不过)
+
+   5.4 全局 max 组件分布 (更新)
+       hidden  : 22/24  (Qwen2.5 3/3, VL 3/3, Qwen3 4/4, Qwen3.5 3/4,
+                         Gemma2 3/3, Gemma3 2/2, Ling 4/4)
+       mlp_out : 1/24   (gpt-oss-20b)
+       final_ln: 1/24   (Qwen3.5-0.8B, Sun 不过)
+       embedding 永远很小 (<1.3)
+       峰值非孤立点: top1/top5_mean ≈ 1.01, decay5/1 ≈ 0.99,
+                     支持 Sun "少数 token × 少数 dim" 图像
+
+
+6. 规模效应 (同系列, |x*| 全局)
+   Qwen2.5     1.5B→7B→32B     = 8.0K, 13.2K, 30.8K             3.9×   近似线性
+   Qwen2.5-VL  3B→7B→32B       = 4.0K, 8.3K, 22.1K              5.5×   单调
+   Qwen3       1.7B→8B→32B     = 14.2K, 17.7K, 35.3K            2.5×   亚线性
+   Qwen3.5     0.8B→9B→27B     = 122, 956, 1,848                15.1×  超线性但绝对值最小
+   Gemma2      2b→9b→27b       = 3.0K, 1.7K, 157.7K             92×    非线性爆发 (2B→9B 降, 27B 爆)
+   Gemma3      4b→27b          = 245.7K → 696.3K                2.8×   只两个点
+
+   结论:
+   - Dense 大体单调, Gemma2 在 2B→9B 出现一个尺寸"低谷"
+   - Qwen3.5 绝对值最小但对规模最敏感 (>10×)
+
+
+7. 跨架构对比
+
+   7.1 相近规模下量级差距
+       ~1-2B:    Qwen3.5-0.8B (122) ↔ Qwen3-1.7B (14.2K)     116×
+       ~8-9B:    Qwen3.5-9B (956) ↔ Qwen3-8B (17.7K)         18×
+       ~27-32B:  Qwen3.5-27B (1.8K) ↔ Gemma3-27b (696K)      377×
+                 Qwen3.5-27B (1.8K) ↔ Qwen2.5-32B (30.8K)    17×
+       跨家族同尺寸最大差 ~ 380×
+
+   7.2 组件载体 (强普适)
+       hidden 22/24, mlp_out 1/24, final_ln 1/24
+       → "hidden 为主" 跨家族成立, 不再有 Qwen3-8B 这个反例
+       → 更新 v1 口径: "mlp_out 2/24" 需改为 "1/24 (gpt-oss-20b)"
+
+   7.3 符号倾向 (按 top1 符号, 各模型单独统计)
+       同号家族:
+           Ling       4/4 全负
+           Qwen3      4/4 全正
+           Gemma3     2/2 全正
+       混合家族:
+           Qwen2.5    2 负 + 1 正 (1.5B/7B 为负, 32B 翻正)
+           Qwen2.5-VL 2 负 + 1 正 (3B/7B 为负, 32B 翻正)
+           Qwen3.5    1 负 + 3 正 (0.8B 为负, 其余为正)
+           Gemma2     1 负 + 2 正 (2b 为负, 9b/27b 为正)
+       个案:
+           GPT-OSS    n=1, 负 (mlp_out)
+       结论:
+           - 大多数家族都存在"某个尺寸翻号"的现象
+           - v1 "Qwen2.5 全负" 修正: 1.5B/7B 负, 32B 翻正
+           - v1 Gemma2+3 合并 5/5 改为分代: Gemma2 混合, Gemma3 全正
+           - 家族代际量级翻转仍需分代讨论 (§8)
+
+   7.4 家族 > 规模 (中-强)
+       同家族跨尺寸 (大多) ≤ 6×, 最极端的 Qwen3.5 才 15× (但绝对值只有 2K)
+       跨家族同尺寸可达 380×
+       → 家族差异 >> 规模差异, 架构家族是激活值量级主要决定因素
+       部署启示: 量化策略按家族配默认档 (见 §10.1), 再按规模微调
+
+
+8. 代际演进
+   Qwen2.5 → Qwen3 → Qwen3.5 (小→中→大 三个尺寸段):
+       1.5-1.7B:     8.0K → 14.2K → 0.12K      先升后 100× 暴降
+       7-9B:         13.2K → 17.7K → 0.96K     先升后 18× 暴降
+       27-32B:       30.8K → 35.3K → 1.85K     先升后 19× 暴降
+       Qwen3.5 同时涌现模式变为 gradual, Sun 判据大部分不过
+       → Qwen3.5 是整个数据集中抑制最成功的通用 Dense 家族
+
+   Gemma2 → Gemma3 (同尺寸段):
+       4-9B:    1.7K → 245.7K   涨 145× (反方向, 激活值更极端)
+       27B:     157.7K → 696.3K 涨 4.4×
+       注意: Gemma3 只有 it, 存在 Base/Instruct 混淆
+
+
+9. 特殊架构
+   9.1 MoE vs Dense (同家族)
+       Qwen3-30B-A3B / Qwen3-32B       = 1.5K / 35.3K = 4.3%    (v1: 4.4%)
+       Qwen3.5-35B-A3B / Qwen3.5-27B   = 132  / 1.85K = 7.1%    (v1: 7.2%)
+       → MoE 普遍压 10~25× 量级
+       → Qwen3-30B-A3B 峰值出现在 layer 3 (深度 6%), MoE 还可能"提前涌现再消退"
+
+   9.2 Ling 训练过程 (5T / 10T / 15T / 20T, |x*| hidden)
+       7.6K → 9.0K → 10.1K → 11.8K, 总涨 +54% (v1 报 +33%, 按新数据修正)
+       涌现层 |max| 相邻层比: 27× → 14× → 74× → 92× (非单调, 但 20T 最猛)
+       峰值位置: layer 14 → 10 → 19 → 19 (训练后期稳定到尾部)
+       → 支持 Sun "隐式 bias 训练中学出来" 假设,
+         但"训练越久涌现越猛"在 5T→10T 一段并非单调, 需加限定
+
+   9.3 VL vs Text (Qwen2.5 家族)
+       7B:   Text 13.2K ↔ VL 8.3K    VL 低 37%
+       32B:  Text 30.8K ↔ VL 22.1K   VL 低 28%
+       → VL 在 ≥7B 段一致抑制激活
+       注: VL 为 Instruct, Text 为 Base, 仍存混淆
+
+   9.4 GPT-OSS-20B
+       唯一一个全局 max 落在 mlp_out 的大模型, |x*| = 145K (绝对值符号参见 top5 扫描)
+       top5 同号且数值几乎相等 (component-bias 型, 非 token-sparse 型),
+       猜想原因: 可能与其 expert 聚合或输出前的 normalization 结构有关
+
+
+10. Discussion
+    10.1 量化分层 (|x*| 从小到大)
+         T1 (极佳)  Qwen3.5, MoE (Qwen3.5-35B-A3B)  120 – 1,850
+         T2 (良好)  Gemma2 小模型, Qwen3-30B-A3B    1.5K – 3K
+         T3 (中等)  Qwen2.5, Qwen2.5-VL, Qwen3      4K – 35K
+         T4 (难)    Gemma2-27b, GPT-OSS             145K – 158K
+         T5 (极难)  Gemma3                          245K – 696K
+         → T4/T5 建议 SmoothQuant 或混合精度
+    10.2 架构: MoE 天然抑制; Qwen3.5 做对了某些事 (同时修改了涌现模式);
+              Gemma3 比 Gemma2 更极端, 架构改进 ≠ 激活值改善
+    10.3 训练: Ling 说明训得越久 |x*| 越大, 但跳变强度非单调
+    10.4 vs Sun:
+         - 一致: 存在性 (20/24 通过 Sun 判据), 少数 token×dim, hidden 为主
+         - 新增: Qwen3.5 整家族 Sun 不过 / 涌现模式 gradual / 末层峰值 —
+                这三点是 Sun 论文未覆盖的新形态
+         - 代际反转 (Qwen 代际 100× 抑制 vs Gemma 代际 145× 放大) 是新观察
+         - MoE 系统性抑制 (~5-7%) 是新观察
+         - Ling 训练步数单调上升是新观察
+    10.5 局限:
+         - Base/Instruct 混杂 (VL, Gemma3)
+         - 单一评测数据 (eval_diverse_5k, ≤5000 样本)
+         - 未做 intervention / causal 验证
+         - per-element 分布仅在 Sun 接口字段保留, 未全盘存盘
+
+
+11. Conclusion
+    - 8 个系列, 24 个 checkpoint 上 20/24 仍满足 Sun 判据
+    - 量级跨度 5700× (122 vs 696K)
+    - 四大因素: 架构 (MoE/Dense) · 代际 · 训练数据量 · 家族 normalization
+    - MoE 与 Qwen3.5 各自指出了抑制方向 (前者稀疏激活, 后者架构内抑)
+    - Gemma 代际反例警示: 架构改进方向不一定降激活
+    - 下一步: feature dim 分析 · intervention · 训练动态 (更多 checkpoint)
