@@ -44,6 +44,10 @@ MODELS=(
     "Qwen2.5|Qwen2.5-1.5B|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
     "Qwen2.5|Qwen2.5-7B|${MODELS_DIR}/Qwen2.5/Qwen2.5-7B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|16|medium"
     "Qwen2.5|Qwen2.5-32B|${MODELS_DIR}/Qwen2.5/Qwen2.5-32B|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|4|xlarge"
+    # Qwen2.5-Instruct series (results go to Qwen2.5-it/, same tokenizer/dataset as Base)
+    "Qwen2.5-it|Qwen2.5-1.5B-Instruct|${MODELS_DIR}/Qwen2.5/Qwen2.5-1.5B-Instruct|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|32|small"
+    "Qwen2.5-it|Qwen2.5-7B-Instruct|${MODELS_DIR}/Qwen2.5/Qwen2.5-7B-Instruct|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|16|medium"
+    "Qwen2.5-it|Qwen2.5-32B-Instruct|${MODELS_DIR}/Qwen2.5/Qwen2.5-32B-Instruct|${DATA_DIR}/eval_diverse_5k_qwen2.5.jsonl|4|xlarge"
     # Qwen3 series
     "Qwen3|Qwen3-1.7B|${MODELS_DIR}/Qwen3/Qwen3-1.7B|${DATA_DIR}/eval_diverse_5k_qwen3.jsonl|32|small"
     "Qwen3|Qwen3-8B|${MODELS_DIR}/Qwen3/Qwen3-8B|${DATA_DIR}/eval_diverse_5k_qwen3.jsonl|16|medium"

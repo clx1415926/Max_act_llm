@@ -27,7 +27,7 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
-SERIES_LIST = ["Qwen2.5", "Qwen3", "Qwen3.5", "gemma2", "gemma3", "gpt_oss", "ling", "Qwen2.5-vl"]
+SERIES_LIST = ["Qwen2.5", "Qwen2.5-it", "Qwen3", "Qwen3.5", "gemma2", "gemma3", "gpt_oss", "ling", "Qwen2.5-vl"]
 
 # Color palette for models within a series
 COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
