@@ -16,35 +16,61 @@ Running activation analysis (analyze_model.py)
 ============================================================
 
 ── Scheduling models (analyze_model.py) ──
-[SKIP] Qwen2.5-1.5B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-7B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-32B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-1.5B-Instruct — already done (_activation_stats.json)
-[SKIP] Qwen2.5-7B-Instruct — already done (_activation_stats.json)
-[SKIP] Qwen3-1.7B — already done (_activation_stats.json)
-[SKIP] Qwen3-8B — already done (_activation_stats.json)
-[SKIP] Qwen3-32B — already done (_activation_stats.json)
-[SKIP] Qwen3-30B-A3B — already done (_activation_stats.json)
-[SKIP] gemma-2b — already done (_activation_stats.json)
-[SKIP] gemma-2-9b — already done (_activation_stats.json)
-[SKIP] gemma-2-27b — already done (_activation_stats.json)
-[SKIP] gpt-oss-20b — already done (_activation_stats.json)
-[SKIP] Ling-mini-5T — already done (_activation_stats.json)
-[SKIP] Ling-mini-10T — already done (_activation_stats.json)
-[SKIP] Ling-mini-15T — already done (_activation_stats.json)
-[SKIP] Ling-mini-20T — already done (_activation_stats.json)
-[SKIP] Qwen3.5-0.8B — already done (_activation_stats.json)
-[SKIP] Qwen3.5-9B — already done (_activation_stats.json)
-[SKIP] Qwen3.5-27B — already done (_activation_stats.json)
-[SKIP] Qwen3.5-35B-A3B — already done (_activation_stats.json)
-[SKIP] gemma-3-4b-it — already done (_activation_stats.json)
-[SKIP] gemma-3-27b-it — already done (_activation_stats.json)
-[SKIP] Qwen2.5-VL-3B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-VL-7B — already done (_activation_stats.json)
-[SKIP] Qwen2.5-VL-32B — already done (_activation_stats.json)
-Queue size: 1 model(s)
-[LAUNCH] Qwen2.5-32B-Instruct → GPU 0
-[DONE] Qwen2.5-32B-Instruct (GPU 0)
+Queue size: 27 model(s)
+[LAUNCH] Qwen2.5-1.5B → GPU 0
+[LAUNCH] Qwen2.5-7B → GPU 1
+[LAUNCH] Qwen2.5-32B → GPU 2
+[LAUNCH] Qwen2.5-1.5B-Instruct → GPU 3
+[LAUNCH] Qwen2.5-7B-Instruct → GPU 4
+[LAUNCH] Qwen2.5-32B-Instruct → GPU 5
+[LAUNCH] Qwen3-1.7B → GPU 6
+[LAUNCH] Qwen3-8B → GPU 7
+[DONE] Qwen2.5-1.5B (GPU 0)
+[LAUNCH] Qwen3-32B → GPU 0
+[DONE] Qwen2.5-1.5B-Instruct (GPU 3)
+[LAUNCH] Qwen3-30B-A3B → GPU 3
+[DONE] Qwen3-1.7B (GPU 6)
+[LAUNCH] gemma-2b → GPU 6
+[DONE] gemma-2b (GPU 6)
+[LAUNCH] gemma-2-9b → GPU 6
+[DONE] Qwen2.5-7B (GPU 1)
+[LAUNCH] gemma-2-27b → GPU 1
+[DONE] Qwen2.5-7B-Instruct (GPU 4)
+[LAUNCH] gpt-oss-20b → GPU 4
+[DONE] Qwen3-8B (GPU 7)
+[LAUNCH] Ling-mini-5T → GPU 7
+[DONE] Qwen3-30B-A3B (GPU 3)
+[LAUNCH] Ling-mini-10T → GPU 3
+[DONE] Ling-mini-5T (GPU 7)
+[LAUNCH] Ling-mini-15T → GPU 7
+[DONE] Ling-mini-10T (GPU 3)
+[LAUNCH] Ling-mini-20T → GPU 3
+[DONE] gpt-oss-20b (GPU 4)
+[LAUNCH] Qwen3.5-0.8B → GPU 4
+[DONE] gemma-2-9b (GPU 6)
+[LAUNCH] Qwen3.5-9B → GPU 6
+[DONE] Ling-mini-15T (GPU 7)
+[LAUNCH] Qwen3.5-27B → GPU 7
+[DONE] Qwen3.5-0.8B (GPU 4)
+[LAUNCH] Qwen3.5-35B-A3B → GPU 4
+[DONE] Ling-mini-20T (GPU 3)
+[LAUNCH] gemma-3-4b-it → GPU 3
+[DONE] Qwen2.5-32B-Instruct (GPU 5)
+[LAUNCH] gemma-3-27b-it → GPU 5
+[DONE] Qwen2.5-32B (GPU 2)
+[LAUNCH] Qwen2.5-VL-3B → GPU 2
+[DONE] gemma-3-4b-it (GPU 3)
+[LAUNCH] Qwen2.5-VL-7B → GPU 3
+[DONE] Qwen3-32B (GPU 0)
+[LAUNCH] Qwen2.5-VL-32B → GPU 0
+[DONE] Qwen3.5-9B (GPU 6)
+[DONE] Qwen2.5-VL-3B (GPU 2)
+[DONE] Qwen3.5-35B-A3B (GPU 4)
+[DONE] gemma-2-27b (GPU 1)
+[DONE] Qwen2.5-VL-7B (GPU 3)
+[DONE] Qwen3.5-27B (GPU 7)
+[DONE] gemma-3-27b-it (GPU 5)
+[DONE] Qwen2.5-VL-32B (GPU 0)
 
 ── Phase: xxlarge models / sequential (analyze_model.py) ──
 
@@ -197,14 +223,12 @@ All done!
 ============================================================
 
 Analyzed this run:
-  Qwen2.5-32B-Instruct [full] [top5]
-
-Previously analyzed:
   Qwen2.5-1.5B [full] [top5]
   Qwen2.5-7B [full] [top5]
   Qwen2.5-32B [full] [top5]
   Qwen2.5-1.5B-Instruct [full] [top5]
   Qwen2.5-7B-Instruct [full] [top5]
+  Qwen2.5-32B-Instruct [full] [top5]
   Qwen3-1.7B [full] [top5]
   Qwen3-8B [full] [top5]
   Qwen3-32B [full] [top5]
@@ -228,49 +252,49 @@ Previously analyzed:
   Qwen2.5-VL-32B [full] [top5]
 
 Generated plots:
-  [04-24 15:36] gemma2/plots/gemma2_activation_comparison.png
-  [04-24 15:36] gemma2/plots/gemma2_max_activation.png
-  [04-24 15:36] gemma2/plots/gemma2_per_model_detail.png
-  [04-24 15:36] gemma2/plots/gemma2_top5_comparison.png
-  [04-24 15:36] gemma2/plots/gemma2_top5_per_model_detail.png
-  [04-24 15:36] gemma3/plots/gemma3_activation_comparison.png
-  [04-24 15:36] gemma3/plots/gemma3_max_activation.png
-  [04-24 15:36] gemma3/plots/gemma3_per_model_detail.png
-  [04-24 15:36] gemma3/plots/gemma3_top5_comparison.png
-  [04-24 15:36] gemma3/plots/gemma3_top5_per_model_detail.png
-  [04-24 15:36] gpt_oss/plots/gpt_oss_activation_comparison.png
-  [04-24 15:36] gpt_oss/plots/gpt_oss_max_activation.png
-  [04-24 15:36] gpt_oss/plots/gpt_oss_per_model_detail.png
-  [04-24 15:36] gpt_oss/plots/gpt_oss_top5_comparison.png
-  [04-24 15:36] gpt_oss/plots/gpt_oss_top5_per_model_detail.png
-  [04-24 15:36] ling/plots/ling_activation_comparison.png
-  [04-24 15:36] ling/plots/ling_max_activation.png
-  [04-24 15:36] ling/plots/ling_per_model_detail.png
-  [04-24 15:36] ling/plots/ling_top5_comparison.png
-  [04-24 15:36] ling/plots/ling_top5_per_model_detail.png
-  [04-24 15:36] plots/cross_series_top5_summary.png
-  [04-24 15:36] Qwen2.5-it/plots/Qwen2.5-it_activation_comparison.png
-  [04-24 15:36] Qwen2.5-it/plots/Qwen2.5-it_max_activation.png
-  [04-24 15:36] Qwen2.5-it/plots/Qwen2.5-it_per_model_detail.png
-  [04-24 15:36] Qwen2.5-it/plots/Qwen2.5-it_top5_comparison.png
-  [04-24 15:36] Qwen2.5-it/plots/Qwen2.5-it_top5_per_model_detail.png
-  [04-24 15:36] Qwen2.5/plots/Qwen2.5_activation_comparison.png
-  [04-24 15:36] Qwen2.5/plots/Qwen2.5_max_activation.png
-  [04-24 15:36] Qwen2.5/plots/Qwen2.5_per_model_detail.png
-  [04-24 15:36] Qwen2.5/plots/Qwen2.5_top5_comparison.png
-  [04-24 15:36] Qwen2.5/plots/Qwen2.5_top5_per_model_detail.png
-  [04-24 15:36] Qwen2.5-vl/plots/Qwen2.5-vl_activation_comparison.png
-  [04-24 15:36] Qwen2.5-vl/plots/Qwen2.5-vl_max_activation.png
-  [04-24 15:36] Qwen2.5-vl/plots/Qwen2.5-vl_per_model_detail.png
-  [04-24 15:36] Qwen2.5-vl/plots/Qwen2.5-vl_top5_comparison.png
-  [04-24 15:36] Qwen2.5-vl/plots/Qwen2.5-vl_top5_per_model_detail.png
-  [04-24 15:36] Qwen3.5/plots/Qwen3.5_activation_comparison.png
-  [04-24 15:36] Qwen3.5/plots/Qwen3.5_max_activation.png
-  [04-24 15:36] Qwen3.5/plots/Qwen3.5_per_model_detail.png
-  [04-24 15:36] Qwen3.5/plots/Qwen3.5_top5_comparison.png
-  [04-24 15:36] Qwen3.5/plots/Qwen3.5_top5_per_model_detail.png
-  [04-24 15:36] Qwen3/plots/Qwen3_activation_comparison.png
-  [04-24 15:36] Qwen3/plots/Qwen3_max_activation.png
-  [04-24 15:36] Qwen3/plots/Qwen3_per_model_detail.png
-  [04-24 15:36] Qwen3/plots/Qwen3_top5_comparison.png
-  [04-24 15:36] Qwen3/plots/Qwen3_top5_per_model_detail.png
+  [04-27 00:35] gemma2/plots/gemma2_activation_comparison.png
+  [04-27 00:35] gemma2/plots/gemma2_max_activation.png
+  [04-27 00:35] gemma2/plots/gemma2_per_model_detail.png
+  [04-27 00:35] gemma2/plots/gemma2_top5_comparison.png
+  [04-27 00:35] gemma2/plots/gemma2_top5_per_model_detail.png
+  [04-27 00:35] gemma3/plots/gemma3_activation_comparison.png
+  [04-27 00:35] gemma3/plots/gemma3_max_activation.png
+  [04-27 00:35] gemma3/plots/gemma3_per_model_detail.png
+  [04-27 00:35] gemma3/plots/gemma3_top5_comparison.png
+  [04-27 00:35] gemma3/plots/gemma3_top5_per_model_detail.png
+  [04-27 00:35] gpt_oss/plots/gpt_oss_activation_comparison.png
+  [04-27 00:35] gpt_oss/plots/gpt_oss_max_activation.png
+  [04-27 00:35] gpt_oss/plots/gpt_oss_per_model_detail.png
+  [04-27 00:35] gpt_oss/plots/gpt_oss_top5_comparison.png
+  [04-27 00:35] gpt_oss/plots/gpt_oss_top5_per_model_detail.png
+  [04-27 00:35] ling/plots/ling_activation_comparison.png
+  [04-27 00:35] ling/plots/ling_max_activation.png
+  [04-27 00:35] ling/plots/ling_per_model_detail.png
+  [04-27 00:35] ling/plots/ling_top5_comparison.png
+  [04-27 00:35] ling/plots/ling_top5_per_model_detail.png
+  [04-27 00:35] plots/cross_series_top5_summary.png
+  [04-27 00:35] Qwen2.5-it/plots/Qwen2.5-it_activation_comparison.png
+  [04-27 00:35] Qwen2.5-it/plots/Qwen2.5-it_max_activation.png
+  [04-27 00:35] Qwen2.5-it/plots/Qwen2.5-it_per_model_detail.png
+  [04-27 00:35] Qwen2.5-it/plots/Qwen2.5-it_top5_comparison.png
+  [04-27 00:35] Qwen2.5-it/plots/Qwen2.5-it_top5_per_model_detail.png
+  [04-27 00:35] Qwen2.5/plots/Qwen2.5_activation_comparison.png
+  [04-27 00:35] Qwen2.5/plots/Qwen2.5_max_activation.png
+  [04-27 00:35] Qwen2.5/plots/Qwen2.5_per_model_detail.png
+  [04-27 00:35] Qwen2.5/plots/Qwen2.5_top5_comparison.png
+  [04-27 00:35] Qwen2.5/plots/Qwen2.5_top5_per_model_detail.png
+  [04-27 00:35] Qwen2.5-vl/plots/Qwen2.5-vl_activation_comparison.png
+  [04-27 00:35] Qwen2.5-vl/plots/Qwen2.5-vl_max_activation.png
+  [04-27 00:35] Qwen2.5-vl/plots/Qwen2.5-vl_per_model_detail.png
+  [04-27 00:35] Qwen2.5-vl/plots/Qwen2.5-vl_top5_comparison.png
+  [04-27 00:35] Qwen2.5-vl/plots/Qwen2.5-vl_top5_per_model_detail.png
+  [04-27 00:35] Qwen3.5/plots/Qwen3.5_activation_comparison.png
+  [04-27 00:35] Qwen3.5/plots/Qwen3.5_max_activation.png
+  [04-27 00:35] Qwen3.5/plots/Qwen3.5_per_model_detail.png
+  [04-27 00:35] Qwen3.5/plots/Qwen3.5_top5_comparison.png
+  [04-27 00:35] Qwen3.5/plots/Qwen3.5_top5_per_model_detail.png
+  [04-27 00:35] Qwen3/plots/Qwen3_activation_comparison.png
+  [04-27 00:35] Qwen3/plots/Qwen3_max_activation.png
+  [04-27 00:35] Qwen3/plots/Qwen3_per_model_detail.png
+  [04-27 00:35] Qwen3/plots/Qwen3_top5_comparison.png
+  [04-27 00:35] Qwen3/plots/Qwen3_top5_per_model_detail.png

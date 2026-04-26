@@ -96,7 +96,15 @@ class StatsAccumulator:
     _SUN_T_RATIO = 1000.0
 
     # Top-K absolute activations to track per eligible component.
-    _TOP5_K = 5
+    # K=100 enables Sun-style top-10, top-100 tables; storage is ~0.8KB/layer.
+    _TOP5_K = 100
+
+    # Log-histogram parameters for streaming layer-wide |x| median.
+    # Covers |x| in [1e-8, 1e8] with 512 log10-uniform bins (~7% resolution).
+    # Applies to the same name whitelist as Sun (hidden/attn/mlp/embedding/final_ln).
+    _ABSMED_N_BINS  = 512
+    _ABSMED_LOG_MIN = -8.0
+    _ABSMED_LOG_MAX = 8.0
 
     def __init__(self):
         # Each stat entry holds GPU tensors (scalar, 0-dim)
@@ -143,6 +151,11 @@ class StatsAccumulator:
                 "n_pass_sun":       0,
                 "sum_ratio":        z64(0.0),
                 "sum_ratio_sq":     z64(0.0),
+                # Layer-wide |x| log-histogram (for streaming median/quantiles)
+                "abs_hist":         torch.zeros(self._ABSMED_N_BINS,
+                                                dtype=torch.int64, device=device),
+                "abs_hist_zero":    torch.tensor(0, dtype=torch.int64, device=device),
+                "abs_hist_count":   torch.tensor(0, dtype=torch.int64, device=device),
             }
         return self._sun[name]
 
@@ -201,6 +214,27 @@ class StatsAccumulator:
             s["n_pass_sun"]   += n_pass
             s["sum_ratio"]    += v_rat.to(torch.float64).sum()
             s["sum_ratio_sq"] += (v_rat.to(torch.float64) ** 2).sum()
+
+            # ── Layer-wide |x| log-histogram (all valid elements, not just per-token extrema)
+            valid_flat = ti[mi].reshape(-1)                             # [T_valid * d]
+            if valid_flat.numel() > 0:
+                total_cnt = valid_flat.numel()
+                zero_mask = valid_flat <= 0.0
+                n_zero = int(zero_mask.sum().item())
+                nonzero = valid_flat[~zero_mask]
+                if nonzero.numel() > 0:
+                    log_vals = torch.log10(nonzero)
+                    span = self._ABSMED_LOG_MAX - self._ABSMED_LOG_MIN
+                    idx = ((log_vals - self._ABSMED_LOG_MIN)
+                           / span * self._ABSMED_N_BINS).floor().long()
+                    idx = idx.clamp(0, self._ABSMED_N_BINS - 1)
+                    ones = torch.ones_like(idx)
+                    s["abs_hist"].scatter_add_(0, idx, ones)
+                    del log_vals, idx, ones
+                s["abs_hist_zero"]  += n_zero
+                s["abs_hist_count"] += total_cnt
+                del zero_mask, nonzero
+            del valid_flat
             del ti, per_tok_max, per_tok_median, ratio, v_abs, v_med, v_rat
 
     def update(self, name, tensor):
@@ -339,15 +373,66 @@ class StatsAccumulator:
             entry["sun_n_pass"]            = int(sd["n_pass_sun"])
             entry["sun_t_val"]             = self._SUN_T_VAL
             entry["sun_t_ratio"]           = self._SUN_T_RATIO
+
+            # ── Layer-wide |x| quantiles from log-histogram ──
+            total = int(sd["abs_hist_count"].item())
+            if total > 0:
+                hist = sd["abs_hist"].cpu().to(torch.int64)
+                n_zero = int(sd["abs_hist_zero"].item())
+                # Cumulative distribution including the zero bucket at the bottom
+                cum = torch.cumsum(hist, dim=0).tolist()
+                span = self._ABSMED_LOG_MAX - self._ABSMED_LOG_MIN
+                def quantile(q):
+                    target = q * total
+                    if target <= n_zero:
+                        return 0.0
+                    t = target - n_zero
+                    # find first bin i with cum[i] >= t
+                    lo, hi = 0, len(cum) - 1
+                    while lo < hi:
+                        mid = (lo + hi) // 2
+                        if cum[mid] >= t:
+                            hi = mid
+                        else:
+                            lo = mid + 1
+                    i = lo
+                    # Linear interpolation inside the log bin
+                    prev = cum[i - 1] if i > 0 else 0
+                    bin_cnt = cum[i] - prev
+                    frac = ((t - prev) / bin_cnt) if bin_cnt > 0 else 0.5
+                    log_lo = self._ABSMED_LOG_MIN + (i * span / self._ABSMED_N_BINS)
+                    log_val = log_lo + frac * (span / self._ABSMED_N_BINS)
+                    return float(10.0 ** log_val)
+
+                entry["abs_median"] = quantile(0.5)
+                entry["abs_q25"]    = quantile(0.25)
+                entry["abs_q75"]    = quantile(0.75)
+                entry["abs_q90"]    = quantile(0.90)   # top 10% threshold
+                entry["abs_q99"]    = quantile(0.99)   # top 1%  threshold
+                entry["abs_q999"]   = quantile(0.999)  # top 0.1% threshold
+                entry["abs_hist_count"] = total
+                entry["abs_hist_zero_frac"] = n_zero / total if total > 0 else 0.0
         # Merge in per-layer top-K absolute/signed values
         for name, abs_t in self._top5.items():
             entry = result.setdefault(name, {})
             abs_vals = abs_t.cpu().tolist()
             signed_vals = self._top5_signed[name].cpu().tolist()
-            entry["top5_abs"]         = abs_vals
-            entry["top5_signed"]      = signed_vals
-            entry["top5_abs_mean"]    = sum(abs_vals) / len(abs_vals) if abs_vals else 0.0
-            entry["top5_signed_mean"] = sum(signed_vals) / len(signed_vals) if signed_vals else 0.0
+            # Full top-K (K=100)
+            entry["topk_abs"]         = abs_vals
+            entry["topk_signed"]      = signed_vals
+            entry["top_k"]            = len(abs_vals)
+            entry["topk_abs_mean"]    = sum(abs_vals) / len(abs_vals) if abs_vals else 0.0
+            entry["topk_signed_mean"] = sum(signed_vals) / len(signed_vals) if signed_vals else 0.0
+            # Backward-compat aliases (top5_* = first 5 of topk_*)
+            entry["top5_abs"]         = abs_vals[:5]
+            entry["top5_signed"]      = signed_vals[:5]
+            entry["top5_abs_mean"]    = (sum(abs_vals[:5]) / min(5, len(abs_vals))) if abs_vals else 0.0
+            entry["top5_signed_mean"] = (sum(signed_vals[:5]) / min(5, len(signed_vals))) if signed_vals else 0.0
+            # Convenience Sun-style slices
+            entry["top10_abs"]        = abs_vals[:10]
+            entry["top10_signed"]     = signed_vals[:10]
+            entry["top100_abs"]       = abs_vals[:100]
+            entry["top100_signed"]    = signed_vals[:100]
         return result
 
 
@@ -677,9 +762,14 @@ def main():
         "per_layer_stats": {},
     }
 
-    # Top-5 fields are list-valued; split them out into a separate JSON so
+    # Top-K fields are list-valued; split them out into a separate JSON so
     # the main activation_stats.json remains purely scalar (backward compat).
-    _TOP5_FIELDS = ("top5_abs", "top5_signed", "top5_abs_mean", "top5_signed_mean")
+    _TOP5_FIELDS = (
+        "topk_abs", "topk_signed", "topk_abs_mean", "topk_signed_mean", "top_k",
+        "top5_abs", "top5_signed", "top5_abs_mean", "top5_signed_mean",
+        "top10_abs", "top10_signed",
+        "top100_abs", "top100_signed",
+    )
     top5_per_layer = {}
     for k, v in summary.items():
         scalar_entry = {}
