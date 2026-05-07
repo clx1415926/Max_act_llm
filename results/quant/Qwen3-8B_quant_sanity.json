@@ -1,0 +1,50 @@
+{
+  "model_name": "Qwen3-8B",
+  "family": "Qwen3",
+  "role": "dense_small",
+  "model_path": "/root/paddlejob/workspace/clx/atv_alz/models/Qwen3/Qwen3-8B",
+  "data_path": "/root/paddlejob/workspace/clx/atv_alz/datasets/eval_diverse_5k_qwen3.jsonl",
+  "bits": 8,
+  "clip_quantile": 0.999,
+  "calibration_samples": 128,
+  "eval_samples": 256,
+  "max_seq_len": 4096,
+  "layer_policy": "peak",
+  "selected_layers": [
+    "layer_16_hidden"
+  ],
+  "reference_global_max_abs": 17664.0,
+  "reference_global_max_location": "layer_16_hidden (max)",
+  "thresholds": {
+    "max_abs": {
+      "layer_16_hidden": 15616.0
+    },
+    "clip_q0.999": {
+      "layer_16_hidden": 7.628724963361016
+    }
+  },
+  "metrics": [
+    {
+      "layer": "layer_16_hidden",
+      "policy": "clip_q0.999",
+      "count": 3969036288,
+      "mae": 0.030969932195957853,
+      "rmse": 4.923934337982516,
+      "rel_mae": 0.05174670170299214,
+      "rel_rmse": 0.9778299156349769,
+      "sqnr_db": 0.19473360210126056,
+      "clip_rate": 0.001861778392488207
+    },
+    {
+      "layer": "layer_16_hidden",
+      "policy": "max_abs",
+      "count": 3969036288,
+      "mae": 0.5961628969994441,
+      "rmse": 1.1750338358931252,
+      "rel_mae": 0.9961101432907976,
+      "rel_rmse": 0.23334657973737133,
+      "sqnr_db": 12.639971207517567,
+      "clip_rate": 2.5195032935914546e-10
+    }
+  ]
+}

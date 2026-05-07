@@ -1,0 +1,50 @@
+{
+  "model_name": "gemma-3-4b-it",
+  "family": "gemma3",
+  "role": "high_peak",
+  "model_path": "/root/paddlejob/workspace/clx/atv_alz/models/gemma3/gemma-3-4b-it",
+  "data_path": "/root/paddlejob/workspace/clx/atv_alz/datasets/eval_diverse_5k_gemma3.jsonl",
+  "bits": 8,
+  "clip_quantile": 0.999,
+  "calibration_samples": 128,
+  "eval_samples": 256,
+  "max_seq_len": 4096,
+  "layer_policy": "peak",
+  "selected_layers": [
+    "layer_29_hidden"
+  ],
+  "reference_global_max_abs": 245760.0,
+  "reference_global_max_location": "layer_29_hidden (max)",
+  "thresholds": {
+    "max_abs": {
+      "layer_29_hidden": 237568.0
+    },
+    "clip_q0.999": {
+      "layer_29_hidden": 1624.7933561309233
+    }
+  },
+  "metrics": [
+    {
+      "layer": "layer_29_hidden",
+      "policy": "clip_q0.999",
+      "count": 2416972800,
+      "mae": 28.01333876657611,
+      "rmse": 1249.5224415402736,
+      "rel_mae": 0.11887027328543244,
+      "rel_rmse": 0.9517821102285514,
+      "sqnr_db": 0.42924924987612767,
+      "clip_rate": 0.001052233190212153
+    },
+    {
+      "layer": "layer_29_hidden",
+      "policy": "max_abs",
+      "count": 2416972800,
+      "mae": 208.12714616233993,
+      "rmse": 276.3208825054045,
+      "rel_mae": 0.8831553763935122,
+      "rel_rmse": 0.2104782306486752,
+      "sqnr_db": 13.535856314671573,
+      "clip_rate": 0.0
+    }
+  ]
+}

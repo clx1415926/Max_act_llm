@@ -1,0 +1,98 @@
+[
+  {
+    "model_name": "Qwen3-30B-A3B",
+    "family": "Qwen3",
+    "role": "moe",
+    "policy": "clip_q0.999",
+    "reference_global_max_abs": 1512.0,
+    "mean_rel_rmse": 0.9809501043904787,
+    "mean_rel_mae": 0.06538130184033092,
+    "mean_clip_rate": 0.002193553136896893,
+    "mean_sqnr_db": 0.1670616452446383,
+    "layers": 1
+  },
+  {
+    "model_name": "Qwen3-30B-A3B",
+    "family": "Qwen3",
+    "role": "moe",
+    "policy": "max_abs",
+    "reference_global_max_abs": 1512.0,
+    "mean_rel_rmse": 0.22829867724413846,
+    "mean_rel_mae": 0.9963360896358952,
+    "mean_clip_rate": 0.0,
+    "mean_sqnr_db": 12.829932095840128,
+    "layers": 1
+  },
+  {
+    "model_name": "Qwen3-32B",
+    "family": "Qwen3",
+    "role": "dense_pair",
+    "policy": "clip_q0.999",
+    "reference_global_max_abs": 35328.0,
+    "mean_rel_rmse": 0.9589243264034721,
+    "mean_rel_mae": 0.04765259042303811,
+    "mean_clip_rate": 0.004145913215696959,
+    "mean_sqnr_db": 0.36431327727747054,
+    "layers": 1
+  },
+  {
+    "model_name": "Qwen3-32B",
+    "family": "Qwen3",
+    "role": "dense_pair",
+    "policy": "max_abs",
+    "reference_global_max_abs": 35328.0,
+    "mean_rel_rmse": 0.3129512435402882,
+    "mean_rel_mae": 0.9965665259356782,
+    "mean_clip_rate": 2.0156026348731635e-10,
+    "mean_sqnr_db": 10.090466367971029,
+    "layers": 1
+  },
+  {
+    "model_name": "Qwen3.5-0.8B",
+    "family": "Qwen3.5",
+    "role": "low_peak",
+    "policy": "clip_q0.999",
+    "reference_global_max_abs": 122.0,
+    "mean_rel_rmse": 0.048505329393918974,
+    "mean_rel_mae": 0.01420941015003045,
+    "mean_clip_rate": 0.0010361378626774316,
+    "mean_sqnr_db": 26.284210836525848,
+    "layers": 1
+  },
+  {
+    "model_name": "Qwen3.5-0.8B",
+    "family": "Qwen3.5",
+    "role": "low_peak",
+    "policy": "max_abs",
+    "reference_global_max_abs": 122.0,
+    "mean_rel_rmse": 0.035189410166624885,
+    "mean_rel_mae": 0.03992858100842576,
+    "mean_clip_rate": 4.979468972219758e-09,
+    "mean_sqnr_db": 29.071760252115087,
+    "layers": 1
+  },
+  {
+    "model_name": "gemma-3-4b-it",
+    "family": "gemma3",
+    "role": "high_peak",
+    "policy": "clip_q0.999",
+    "reference_global_max_abs": 245760.0,
+    "mean_rel_rmse": 0.9517821102285513,
+    "mean_rel_mae": 0.11887027328543245,
+    "mean_clip_rate": 0.001052233190212153,
+    "mean_sqnr_db": 0.42924924987612767,
+    "layers": 1
+  },
+  {
+    "model_name": "gemma-3-4b-it",
+    "family": "gemma3",
+    "role": "high_peak",
+    "policy": "max_abs",
+    "reference_global_max_abs": 245760.0,
+    "mean_rel_rmse": 0.2104782306486752,
+    "mean_rel_mae": 0.8831553763935122,
+    "mean_clip_rate": 0.0,
+    "mean_sqnr_db": 13.535856314671573,
+    "layers": 1
+  }
+]
